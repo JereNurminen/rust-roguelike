@@ -7,6 +7,7 @@ pub struct UiState {
     selected_tile: Option<WorldPosition>,
     drag_start: Option<Vec2>,
     initial_click_pos: Option<Vec2>,
+    zoom_target: Option<f32>,
 }
 
 pub struct Camera {
@@ -34,6 +35,7 @@ impl UiState {
             selected_tile: None,
             drag_start: None,
             initial_click_pos: None, // Initialize new field
+            zoom_target: None,
         }
     }
 
@@ -73,19 +75,20 @@ impl UiState {
             self.initial_click_pos = None;
         }
 
-        // Handle zoom (same as before)
         let wheel = mouse_wheel().1;
         if wheel != 0.0 {
             let mouse_pos: Vec2 = mouse_position().into();
-            let before_zoom = self.screen_to_world(mouse_pos);
+            let before_zoom = self.screen_to_world_f(mouse_pos);
 
             let old_zoom = self.camera.zoom;
-            self.camera.zoom = (self.camera.zoom * (1.0 + wheel * 0.1)).clamp(0.1, 3.0);
+            let target_zoom = (self.camera.zoom * (1.0 + wheel * 0.1)).clamp(0.1, 3.0);
+
+            let lerp_factor = 0.5;
+            self.camera.zoom = old_zoom + (target_zoom - old_zoom) * lerp_factor;
 
             if old_zoom != self.camera.zoom {
-                let after_zoom = self.screen_to_world(mouse_pos);
-                self.camera.pos.x += before_zoom.x as f32 - after_zoom.x as f32;
-                self.camera.pos.y += before_zoom.y as f32 - after_zoom.y as f32;
+                let after_zoom = self.screen_to_world_f(mouse_pos);
+                self.camera.pos += before_zoom - after_zoom;
             }
         }
     }
@@ -195,20 +198,29 @@ impl UiState {
         )
     }
 
-    fn screen_to_world(&self, screen_pos: Vec2) -> WorldPosition {
+    // Add a new function for floating point world coordinates
+    fn world_to_screen_f(&self, pos: Vec2) -> Vec2 {
+        let offset = Vec2::new(
+            self.camera.pos.x * TILE_SIZE * self.camera.zoom,
+            self.camera.pos.y * TILE_SIZE * self.camera.zoom,
+        );
+        Vec2::new(
+            pos.x * TILE_SIZE * self.camera.zoom - offset.x + screen_width() / 2.0,
+            pos.y * TILE_SIZE * self.camera.zoom - offset.y + screen_height() / 2.0,
+        )
+    }
+
+    // Add a new function for floating point world coordinates
+    fn screen_to_world_f(&self, screen_pos: Vec2) -> Vec2 {
         let screen_center = Vec2::new(screen_width() / 2.0, screen_height() / 2.0);
         let relative_pos = screen_pos - screen_center;
-        let world_pos = (relative_pos
-            + Vec2::new(
-                TILE_SIZE * self.camera.zoom / 2.0,
-                TILE_SIZE * self.camera.zoom / 2.0,
-            ))
-            / (TILE_SIZE * self.camera.zoom);
+        let world_pos = relative_pos / (TILE_SIZE * self.camera.zoom);
+        world_pos + self.camera.pos
+    }
 
-        WorldPosition::new(
-            (world_pos.x + self.camera.pos.x).floor() as i32,
-            (world_pos.y + self.camera.pos.y).floor() as i32,
-        )
+    fn screen_to_world(&self, screen_pos: Vec2) -> WorldPosition {
+        let world_pos = self.screen_to_world_f(screen_pos);
+        WorldPosition::new(world_pos.x.floor() as i32, world_pos.y.floor() as i32)
     }
 
     fn draw_grid(&self, tile_size: f32) {
