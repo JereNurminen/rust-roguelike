@@ -45,8 +45,9 @@ impl UiState {
             if let Some(start) = self.drag_start {
                 let current = Vec2::new(mouse_position().0, mouse_position().1);
                 let delta = current - start;
-                self.camera.pos.x -= (delta.x / self.camera.zoom) as i32;
-                self.camera.pos.y -= (delta.y / self.camera.zoom) as i32;
+                // Move the camera in the opposite direction of the drag
+                self.camera.pos.x -= (delta.x / (TILE_SIZE * self.camera.zoom)) as i32;
+                self.camera.pos.y -= (delta.y / (TILE_SIZE * self.camera.zoom)) as i32;
                 self.drag_start = Some(current);
             }
         }
@@ -175,15 +176,18 @@ impl UiState {
     }
 
     fn screen_to_world(&self, screen_pos: Vec2) -> WorldPosition {
-        let offset = Vec2::new(
-            self.camera.pos.x as f32 * TILE_SIZE * self.camera.zoom,
-            self.camera.pos.y as f32 * TILE_SIZE * self.camera.zoom,
-        );
+        let screen_center = Vec2::new(screen_width() / 2.0, screen_height() / 2.0);
+        let relative_pos = screen_pos - screen_center;
+        let world_pos = (relative_pos
+            + Vec2::new(
+                TILE_SIZE * self.camera.zoom / 2.0,
+                TILE_SIZE * self.camera.zoom / 2.0,
+            ))
+            / (TILE_SIZE * self.camera.zoom);
+
         WorldPosition::new(
-            ((screen_pos.x + offset.x - screen_width() / 2.0) / (TILE_SIZE * self.camera.zoom))
-                as i32,
-            ((screen_pos.y + offset.y - screen_height() / 2.0) / (TILE_SIZE * self.camera.zoom))
-                as i32,
+            (world_pos.x + self.camera.pos.x as f32).floor() as i32,
+            (world_pos.y + self.camera.pos.y as f32).floor() as i32,
         )
     }
 }
