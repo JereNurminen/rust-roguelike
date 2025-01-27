@@ -10,7 +10,7 @@ pub struct UiState {
 }
 
 pub struct Camera {
-    pos: WorldPosition,
+    pos: Vec2,
     zoom: f32,
     drag_offset: Vec2,
 }
@@ -27,7 +27,7 @@ impl UiState {
     pub fn new() -> Self {
         Self {
             camera: Camera {
-                pos: WorldPosition::new(0, 0),
+                pos: Vec2::ZERO,
                 zoom: 1.0,
                 drag_offset: Vec2::ZERO,
             },
@@ -41,8 +41,7 @@ impl UiState {
         if is_mouse_button_pressed(MouseButton::Left) {
             let current_pos: Vec2 = mouse_position().into();
             self.drag_start = Some(current_pos);
-            self.initial_click_pos = Some(current_pos); // Store initial click position
-            self.camera.drag_offset = Vec2::ZERO;
+            self.initial_click_pos = Some(current_pos);
         }
 
         if is_mouse_button_down(MouseButton::Left) {
@@ -53,21 +52,8 @@ impl UiState {
                 // Convert screen space delta to world space delta
                 let world_delta = delta / (TILE_SIZE * self.camera.zoom);
 
-                // Accumulate the movement
-                self.camera.drag_offset += world_delta;
-
-                // Update camera position when accumulated movement is large enough
-                let dx = self.camera.drag_offset.x.floor() as i32;
-                let dy = self.camera.drag_offset.y.floor() as i32;
-
-                if dx != 0 || dy != 0 {
-                    self.camera.pos.x -= dx;
-                    self.camera.pos.y -= dy;
-
-                    // Subtract the applied movement from the accumulator
-                    self.camera.drag_offset.x -= dx as f32;
-                    self.camera.drag_offset.y -= dy as f32;
-                }
+                // Directly update camera position without snapping
+                self.camera.pos -= world_delta;
 
                 // Update drag start for next frame
                 self.drag_start = Some(current);
@@ -76,20 +62,18 @@ impl UiState {
 
         if is_mouse_button_released(MouseButton::Left) {
             if let Some(initial_pos) = self.initial_click_pos {
-                // Use initial click position
                 let current: Vec2 = mouse_position().into();
-                let delta = current - initial_pos; // Compare with initial position
+                let delta = current - initial_pos;
 
-                // If movement was small enough, treat as a click
                 if delta.length() < 5.0 {
                     self.selected_tile = Some(self.screen_to_world(current));
                 }
             }
             self.drag_start = None;
-            self.initial_click_pos = None; // Clear initial position
+            self.initial_click_pos = None;
         }
 
-        // Handle zoom
+        // Handle zoom (same as before)
         let wheel = mouse_wheel().1;
         if wheel != 0.0 {
             let mouse_pos: Vec2 = mouse_position().into();
@@ -100,8 +84,8 @@ impl UiState {
 
             if old_zoom != self.camera.zoom {
                 let after_zoom = self.screen_to_world(mouse_pos);
-                self.camera.pos.x += before_zoom.x - after_zoom.x;
-                self.camera.pos.y += before_zoom.y - after_zoom.y;
+                self.camera.pos.x += before_zoom.x as f32 - after_zoom.x as f32;
+                self.camera.pos.y += before_zoom.y as f32 - after_zoom.y as f32;
             }
         }
     }
@@ -202,8 +186,8 @@ impl UiState {
 
     fn world_to_screen(&self, pos: WorldPosition) -> Vec2 {
         let offset = Vec2::new(
-            self.camera.pos.x as f32 * TILE_SIZE * self.camera.zoom,
-            self.camera.pos.y as f32 * TILE_SIZE * self.camera.zoom,
+            self.camera.pos.x * TILE_SIZE * self.camera.zoom,
+            self.camera.pos.y * TILE_SIZE * self.camera.zoom,
         );
         Vec2::new(
             pos.x as f32 * TILE_SIZE * self.camera.zoom - offset.x + screen_width() / 2.0,
@@ -222,8 +206,8 @@ impl UiState {
             / (TILE_SIZE * self.camera.zoom);
 
         WorldPosition::new(
-            (world_pos.x + self.camera.pos.x as f32).floor() as i32,
-            (world_pos.y + self.camera.pos.y as f32).floor() as i32,
+            (world_pos.x + self.camera.pos.x).floor() as i32,
+            (world_pos.y + self.camera.pos.y).floor() as i32,
         )
     }
 
