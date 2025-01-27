@@ -1,6 +1,5 @@
-use eframe::{egui, App};
-
 use crate::game::Game;
+use macroquad::window::Conf;
 
 mod core;
 mod game;
@@ -8,19 +7,23 @@ mod systems;
 mod ui;
 mod world;
 
-fn main() -> Result<(), eframe::Error> {
-    let options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default()
-            .with_inner_size((800.0, 600.0))
-            .with_title("roguelike"),
+fn window_conf() -> Conf {
+    Conf {
+        window_title: "Roguelike".to_owned(),
+        window_width: 800,
+        window_height: 600,
+        fullscreen: false,
+        // You can customize more window settings here:
+        // sample_count: 4,        // MSAA
+        // high_dpi: true,        // Enable high DPI mode
+        // window_resizable: true, // Allow window resizing
+        // vsync: true,           // Enable vsync
         ..Default::default()
-    };
-    eframe::run_native(
-        "Roguelike",
-        options,
-        Box::new(|cc| {
-            // Customize egui here with cc.egui_ctx if needed
-            Ok(Box::new(Game::new(cc)))
-        }),
-    )
+    }
+}
+
+#[macroquad::main(window_conf)]
+async fn main() {
+    let mut game = Game::new();
+    game.run().await;
 }

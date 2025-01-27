@@ -1,4 +1,3 @@
-use eframe::{egui, App};
 use std::time::Instant;
 
 use crate::ui::{MenuType, UiState};
@@ -6,6 +5,7 @@ use crate::world::{
     entity::{CoreAttributes, EntityId, Exhaustion, Status},
     Entity, World, WorldPosition,
 };
+use macroquad::prelude::*;
 
 pub enum GameState {
     PlayerTurn,
@@ -23,10 +23,7 @@ pub struct Game {
 }
 
 impl Game {
-    pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
-        // Set up custom fonts if needed
-        // cc.egui_ctx.set_fonts(...);
-        //
+    pub fn new() -> Self {
         let player = Entity::new(
             0,
             crate::world::entity::EntityKind::Player,
@@ -49,13 +46,26 @@ impl Game {
         }
     }
 
-    fn update(&mut self, ctx: &egui::Context) {
+    pub async fn run(&mut self) {
+        loop {
+            self.update();
+            self.render();
+            next_frame().await;
+        }
+    }
+
+    fn update(&mut self) {
         let now = Instant::now();
         let dt = now.duration_since(self.last_update).as_secs_f32();
         self.last_update = now;
 
+        // Update UI state (handle input)
+        self.ui.update();
+
+        // Update world
         self.world.update(dt);
 
+        // Handle game state transitions
         match &mut self.state {
             GameState::AnimatingTurnTransition { pending_animations } => {
                 pending_animations.retain(|&entity_id| self.world.is_entity_animating(entity_id));
@@ -65,19 +75,41 @@ impl Game {
             }
             _ => {}
         }
+
+        // Handle input for game state changes
+        if is_key_pressed(KeyCode::Escape) {
+            match self.state {
+                GameState::InMenu(_) => self.state = GameState::PlayerTurn,
+                GameState::PlayerTurn => self.state = GameState::InMenu(MenuType::Pause),
+                _ => {}
+            }
+        }
+
+        // Add other input handling here
+        if is_key_pressed(KeyCode::I) && matches!(self.state, GameState::PlayerTurn) {
+            self.state = GameState::InMenu(MenuType::Inventory);
+        }
+        if is_key_pressed(KeyCode::C) && matches!(self.state, GameState::PlayerTurn) {
+            self.state = GameState::InMenu(MenuType::Character);
+        }
+    }
+
+    fn render(&mut self) {
+        clear_background(BLACK);
+
+        // Render game world
+        self.ui.render_game(&self.world);
+
+        // Render active menu if in menu state
+        if let GameState::InMenu(menu_type) = &self.state {
+            self.ui.render_menu(menu_type);
+        }
     }
 }
 
-impl App for Game {
-    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        self.update(ctx);
-
-        egui::CentralPanel::default().show(ctx, |ui| {
-            self.ui.render_game(ui, &self.world);
-        });
-
-        if let GameState::InMenu(menu_type) = &self.state {
-            self.ui.render_menu(ctx, menu_type);
-        }
-    }
+// Main game entry point
+#[macroquad::main("Roguelike")]
+async fn main() {
+    let mut game = Game::new();
+    game.run().await;
 }

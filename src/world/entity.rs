@@ -108,7 +108,7 @@ pub struct Entity {
     kind: EntityKind,
     pos: Option<WorldPosition>,
     stats: CoreAttributes,
-    status: Status,
+    pub status: Status,
     visual_pos: Option<(f32, f32)>,
     animation: Option<Animation>,
     visible: bool,
