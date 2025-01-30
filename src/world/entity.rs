@@ -1,5 +1,9 @@
+use macroquad::math::Vec2;
+use macroquad::prelude::animation::AnimatedSprite;
+use macroquad::texture::Image;
+
 use super::WorldPosition;
-use crate::core::types::DieRoll;
+use crate::core::types::{DieRoll, Direction};
 use crate::systems::ai::Memory;
 use crate::systems::animation::Animation;
 
@@ -103,14 +107,23 @@ pub struct Inventory {
     items: Vec<EntityId>,
 }
 
+pub enum Sprite {
+    Static(Image),
+    Animated(AnimatedSprite),
+}
+
+pub struct DisplayProperties {
+    pub sprite: Sprite,
+    pub visual_position: Vec2,
+}
+
 pub struct Entity {
     pub id: EntityId,
     kind: EntityKind,
     pos: Option<WorldPosition>,
     stats: CoreAttributes,
     pub status: Status,
-    visual_pos: Option<(f32, f32)>,
-    animation: Option<Animation>,
+    pub display: Option<DisplayProperties>,
     visible: bool,
     discovered: bool,
     memory: Option<Memory>,
@@ -165,19 +178,18 @@ impl Entity {
         pos: Option<WorldPosition>,
         stats: CoreAttributes,
         status: Status,
+        display: Option<DisplayProperties>,
     ) -> Self {
-        //let visual_pos = (pos.x as f32, pos.y as f32);
         Self {
             id,
             kind,
             pos,
-            visual_pos: None,
-            animation: None,
             visible: false,
             discovered: false,
             memory: None,
             stats,
             status,
+            display,
         }
     }
 
@@ -191,29 +203,46 @@ impl Entity {
         }
     } */
 
-    pub fn start_move_animation(&mut self, start: (f32, f32), end: (f32, f32)) {
-        self.animation = Some(Animation::Move {
-            start,
-            end,
-            progress: 0.0,
-            duration: 0.2,
-        });
-    }
+    //pub fn start_move_animation(&mut self, start: (f32, f32), end: (f32, f32)) {}
 
-    pub fn is_moving(&self) -> bool {
-        matches!(self.animation, Some(Animation::Move { .. }))
-    }
+    //pub fn is_moving(&self) -> bool {}
 
     pub fn position(&self) -> Option<WorldPosition> {
         self.pos
     }
 
-    pub fn visual_pos(&self) -> Option<(f32, f32)> {
-        self.visual_pos
+    pub fn visual_pos(&self) -> Option<Vec2> {
+        if let Some(display) = &self.display {
+            Some(display.visual_position)
+        } else {
+            None
+        }
     }
 
     pub fn set_position(&mut self, pos: Option<WorldPosition>) {
         self.pos = pos.clone();
+    }
+
+    pub fn get_position_in_direction(&self, dir: Direction) -> Option<WorldPosition> {
+        match (self.pos, dir) {
+            (Some(pos), Direction::North) => Some(WorldPosition {
+                x: pos.x,
+                y: pos.y - 1,
+            }),
+            (Some(pos), Direction::South) => Some(WorldPosition {
+                x: pos.x,
+                y: pos.y + 1,
+            }),
+            (Some(pos), Direction::East) => Some(WorldPosition {
+                x: pos.x + 1,
+                y: pos.y,
+            }),
+            (Some(pos), Direction::West) => Some(WorldPosition {
+                x: pos.x - 1,
+                y: pos.y,
+            }),
+            (None, _) => None,
+        }
     }
 
     pub fn kind(&self) -> &EntityKind {

@@ -70,14 +70,7 @@ impl World {
             .collect()
     }
 
-    pub fn is_entity_animating(&self, entity_id: usize) -> bool {
-        self.entities
-            .get(&entity_id)
-            .map(|e| e.is_moving())
-            .unwrap_or(false)
-    }
-
-    pub fn can_move_to(&self, entity: Entity, pos: &WorldPosition) -> bool {
+    pub fn can_move_to(&self, entity: &Entity, pos: &WorldPosition) -> bool {
         let entities_in_target_pos = self.get_entities_by_pos(&pos);
         // TODO: Actual logic for checking if entity can move to target position
         true
@@ -86,9 +79,6 @@ impl World {
     pub fn move_entity(&mut self, entity_id: &EntityId, target: &WorldPosition) {
         if let Some(entity) = self.get_entity_by_id_mut(&entity_id) {
             entity.set_position(Some(*target));
-            if let Some(start_pos) = entity.visual_pos() {
-                entity.start_move_animation(start_pos, target.clone().into());
-            }
         }
     }
 

@@ -1,6 +1,7 @@
 use std::time::Instant;
 
 use crate::ui::{MenuType, UiState};
+use crate::world::entity::{DisplayProperties, Sprite};
 use crate::world::{
     entity::{CoreAttributes, EntityId, Exhaustion, Status},
     Entity, World, WorldPosition,
@@ -35,6 +36,14 @@ impl Game {
                 mana: 10,
                 exhaustion: Exhaustion::Rested,
             },
+            Some(DisplayProperties {
+                visual_position: Vec2::new(0.0, 0.0),
+                sprite: Sprite::Static(Image::gen_image_color(
+                    16,
+                    16,
+                    Color::from_rgba(255, 0, 0, 255),
+                )),
+            }),
         );
 
         Self {
@@ -66,6 +75,7 @@ impl Game {
         self.world.update(dt);
 
         // Handle game state transitions
+        /*
         match &mut self.state {
             GameState::AnimatingTurnTransition { pending_animations } => {
                 pending_animations.retain(|&entity_id| self.world.is_entity_animating(entity_id));
@@ -75,6 +85,7 @@ impl Game {
             }
             _ => {}
         }
+        */
 
         // Handle input for game state changes
         if is_key_pressed(KeyCode::Escape) {

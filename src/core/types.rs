@@ -48,3 +48,15 @@ impl DieRoll {
         roll_result as i64 + self.modifier
     }
 }
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Direction {
+    North,
+    //NorthEast,
+    East,
+    //SouthEast,
+    South,
+    //SouthWest,
+    West,
+    //NorthWest,
+}
