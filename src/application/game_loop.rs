@@ -8,6 +8,7 @@ use crate::{
         events::{process_event, GameEvent},
         turns::TurnManager,
     },
+    core::types::Direction,
     domain::{entity::EntityId, world::World},
 };
 
@@ -33,24 +34,22 @@ impl GameLoop {
             println!("Received event {:?}", event);
             match &event {
                 GameEvent::EndTurn(entity_id) => {
-                    // We'll do the actual end-turn logic after we
-                    // apply the domain effect (though here it's a no-op).
                     let next = self.next_turn();
-                    // You could also broadcast a "StartTurn(next_id)" event if you wish
                     if let Some(next_id) = next {
                         println!("It is now Entity #{}'s turn!", next_id);
+                        if next_id != 0 {
+                            self.enemy_act(next_id);
+                        }
                     }
                 }
                 _ => {}
             }
 
-            // 2. Apply the domain effect of the event to the World:
             let mut world_guard = self.world.lock().unwrap();
             let follow_ups = process_event(&mut *world_guard, &event);
 
             drop(world_guard);
 
-            // 4. Spawn follow-up events:
             for e in follow_ups {
                 if let Err(err) = self.event_sender.send(e) {
                     eprintln!("Error sending follow-up event: {:?}", err);
@@ -75,5 +74,13 @@ impl GameLoop {
     fn next_turn(&self) -> Option<EntityId> {
         let mut tm = self.turn_manager.lock().unwrap();
         tm.next_turn()
+    }
+
+    // Placeholder for the enemy AI logic
+    fn enemy_act(&self, enemy_id: EntityId) {
+        let _ = self
+            .event_sender
+            .send(GameEvent::Move(enemy_id, Direction::North));
+        let _ = self.event_sender.send(GameEvent::EndTurn(enemy_id));
     }
 }
