@@ -1,11 +1,6 @@
-use macroquad::math::Vec2;
-use macroquad::prelude::animation::AnimatedSprite;
-use macroquad::texture::Image;
-
-use super::WorldPosition;
 use crate::core::types::{DieRoll, Direction};
-use crate::systems::ai::Memory;
-use crate::systems::animation::Animation;
+
+use super::world_position::WorldPosition;
 
 pub type EntityId = usize;
 
@@ -107,39 +102,32 @@ pub struct Inventory {
     items: Vec<EntityId>,
 }
 
-pub enum Sprite {
-    Static(Image),
-    Animated(AnimatedSprite),
-}
-
-pub struct DisplayProperties {
-    pub sprite: Sprite,
-    pub visual_position: Vec2,
-}
-
 pub struct Entity {
     pub id: EntityId,
     kind: EntityKind,
     pos: Option<WorldPosition>,
     stats: CoreAttributes,
     pub status: Status,
-    pub display: Option<DisplayProperties>,
     visible: bool,
     discovered: bool,
-    memory: Option<Memory>,
+    //memory: Option<Memory>,
 }
 
+#[derive(PartialEq)]
 pub enum SpeciesKind {
     Human,
     Goblin,
 }
 
+#[derive(PartialEq)]
 pub struct WallMaterial {
     pub blocks_vision: bool,
 }
 
+#[derive(PartialEq)]
 pub struct FloorMaterial {}
 
+#[derive(PartialEq)]
 pub enum EntityKind {
     Player,
     Npc { species: SpeciesKind },
@@ -148,6 +136,7 @@ pub enum EntityKind {
     Floor { material: FloorMaterial },
 }
 
+#[derive(PartialEq)]
 pub enum DamageType {
     Slice,
     Pierce,
@@ -155,17 +144,20 @@ pub enum DamageType {
     Fire,
 }
 
+#[derive(PartialEq)]
 pub struct Damage {
     damage_type: DamageType,
     damage: DieRoll,
 }
 
+#[derive(PartialEq)]
 pub enum ItemKind {
     Weapon { damage: Vec<Damage> },
     Armor { defense: u64 },
     Potion { effect: PotionEffect },
 }
 
+#[derive(PartialEq)]
 pub enum PotionEffect {
     Heal(DieRoll),
     Poison(DieRoll),
@@ -178,7 +170,6 @@ impl Entity {
         pos: Option<WorldPosition>,
         stats: CoreAttributes,
         status: Status,
-        display: Option<DisplayProperties>,
     ) -> Self {
         Self {
             id,
@@ -186,30 +177,21 @@ impl Entity {
             pos,
             visible: false,
             discovered: false,
-            memory: None,
+            //memory: None,
             stats,
             status,
-            display,
         }
     }
 
-    pub fn position(&self) -> Option<WorldPosition> {
+    pub fn pos(&self) -> Option<WorldPosition> {
         self.pos
     }
 
-    pub fn visual_pos(&self) -> Option<Vec2> {
-        if let Some(display) = &self.display {
-            Some(display.visual_position)
-        } else {
-            None
-        }
-    }
-
-    pub fn set_position(&mut self, pos: Option<WorldPosition>) {
+    pub fn set_pos(&mut self, pos: Option<WorldPosition>) {
         self.pos = pos.clone();
     }
 
-    pub fn get_position_in_direction(&self, dir: Direction) -> Option<WorldPosition> {
+    pub fn get_pos_in_direction(&self, dir: Direction) -> Option<WorldPosition> {
         match (self.pos, dir) {
             (Some(pos), Direction::North) => Some(WorldPosition {
                 x: pos.x,
