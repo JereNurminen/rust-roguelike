@@ -1,9 +1,9 @@
-mod attributes;
-mod combat;
-mod equipment;
-mod types;
+pub mod attributes;
+pub mod combat;
+pub mod equipment;
+pub mod types;
 
-pub use attributes::*;
-pub use combat::*;
-pub use equipment::*;
-pub use types::*;
+pub use attributes::{CoreAttributes, CreatureRaceKind, CreatureTemplate, Exhaustion, StatVariance, Stats, Status, TemplateStat};
+pub use combat::{Damage, DamageType, PotionEffect};
+pub use equipment::{Armor, Equipment, HandsEquipment, Inventory, ItemKind};
+pub use types::{Entity, EntityId, EntityKind, Material, MaterialKind, Size, SpeciesKind};
