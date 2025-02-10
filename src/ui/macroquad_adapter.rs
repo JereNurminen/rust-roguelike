@@ -66,7 +66,7 @@ impl MacroquadUI {
 
         if let Some(direction) = direction {
             self.event_sender
-                .send(GameEvent::Move(player_id, direction))
+                .send(GameEvent::MoveByDirection(player_id, direction))
                 .expect("Panic while moving player");
             self.event_sender
                 .send(GameEvent::EndTurn(player_id))

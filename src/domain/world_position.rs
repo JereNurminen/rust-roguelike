@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 #[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub struct WorldPosition {
     pub x: i32,
@@ -32,5 +34,11 @@ impl WorldPosition {
 impl From<WorldPosition> for (f32, f32) {
     fn from(pos: WorldPosition) -> Self {
         (pos.x as f32, pos.y as f32)
+    }
+}
+
+impl Display for WorldPosition {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({}, {})", self.x, self.y)
     }
 }

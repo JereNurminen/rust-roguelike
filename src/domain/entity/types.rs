@@ -30,6 +30,23 @@ pub struct Material {
     pub blocks_movement: bool,
 }
 
+impl MaterialKind {
+    pub fn get_material(&self) -> Material {
+        match self {
+            MaterialKind::Stone => Material {
+                kind: MaterialKind::Stone,
+                blocks_vision: true,
+                blocks_movement: true,
+            },
+            MaterialKind::Flesh => Material {
+                kind: MaterialKind::Flesh,
+                blocks_vision: false,
+                blocks_movement: false,
+            },
+        }
+    }
+}
+
 #[derive(PartialEq, Clone)]
 pub enum EntityKind {
     Player,
@@ -85,6 +102,13 @@ impl Entity {
 
     pub fn set_pos(&mut self, pos: Option<WorldPosition>) {
         self.pos = pos.clone();
+    }
+
+    pub fn can_move_to(&self, pos: &WorldPosition, entities_in_pos: Vec<&Entity>) -> bool {
+        entities_in_pos.iter().all(|e| match *e.kind() {
+            EntityKind::Wall { .. } => false,
+            _ => true,
+        })
     }
 
     pub fn get_pos_in_direction(&self, dir: Direction) -> Option<WorldPosition> {

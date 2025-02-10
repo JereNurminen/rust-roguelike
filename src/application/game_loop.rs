@@ -1,8 +1,11 @@
-use std::sync::{mpsc::{Receiver, Sender}, Arc, Mutex};
 use crate::{
     application::{events::GameEvent, turns::TurnManager},
     core::types::Direction,
     domain::{entity::EntityId, world::World},
+};
+use std::sync::{
+    mpsc::{Receiver, Sender},
+    Arc, Mutex,
 };
 
 pub struct GameLoop {
@@ -29,7 +32,7 @@ impl GameLoop {
 
     pub fn run(&self) {
         self.initialize_turns();
-        
+
         while let Ok(event) = self.event_receiver.recv() {
             let mut world = self.world.lock().unwrap();
             event.clone().apply(&mut world);
@@ -58,7 +61,8 @@ impl GameLoop {
 
         if let Some(id) = next_id {
             println!("Starting turn for Entity #{}", id);
-            if id != 0 { // Non-player entity
+            if id != 0 {
+                // Non-player entity
                 self.run_ai_turn(id);
             }
         }
@@ -66,7 +70,9 @@ impl GameLoop {
 
     fn run_ai_turn(&self, entity_id: EntityId) {
         // Simple AI just moves north and ends turn
-        let _ = self.event_sender.send(GameEvent::Move(entity_id, Direction::North));
+        let _ = self
+            .event_sender
+            .send(GameEvent::MoveByDirection(entity_id, Direction::North));
         let _ = self.event_sender.send(GameEvent::EndTurn(entity_id));
     }
 }
