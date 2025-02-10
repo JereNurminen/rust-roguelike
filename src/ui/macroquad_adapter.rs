@@ -89,7 +89,12 @@ impl MacroquadUI {
                     RED
                 };
 
-                draw_circle(screen_pos.x, screen_pos.y, 10.0, color);
+                draw_circle(
+                    screen_pos.x,
+                    screen_pos.y,
+                    10.0 * self.camera.zoom,
+                    color
+                );
             }
         }
     }
@@ -113,13 +118,15 @@ impl MacroquadUI {
 
         // Vertical lines
         for x in start_x..=end_x {
-            let start_pos = self.camera.world_to_screen(WorldPosition::new(x, start_y));
-            let end_pos = self.camera.world_to_screen(WorldPosition::new(x, end_y));
+            let start_world = WorldPosition::new(x, start_y);
+            let end_world = WorldPosition::new(x, end_y);
+            let start_pos = self.camera.world_to_screen(start_world);
+            let end_pos = self.camera.world_to_screen(end_world);
             draw_line(
-                start_pos.x - TILE_SIZE * self.camera.zoom / 2.0,
-                start_pos.y - TILE_SIZE * self.camera.zoom / 2.0,
-                end_pos.x - TILE_SIZE * self.camera.zoom / 2.0,
-                end_pos.y - TILE_SIZE * self.camera.zoom / 2.0,
+                start_pos.x,
+                start_pos.y,
+                end_pos.x,
+                end_pos.y,
                 1.0,
                 Color::new(0.3, 0.3, 0.3, 1.0),
             );
@@ -127,13 +134,15 @@ impl MacroquadUI {
 
         // Horizontal lines
         for y in start_y..=end_y {
-            let start_pos = self.camera.world_to_screen(WorldPosition::new(start_x, y));
-            let end_pos = self.camera.world_to_screen(WorldPosition::new(end_x, y));
+            let start_world = WorldPosition::new(start_x, y);
+            let end_world = WorldPosition::new(end_x, y);
+            let start_pos = self.camera.world_to_screen(start_world);
+            let end_pos = self.camera.world_to_screen(end_world);
             draw_line(
-                start_pos.x - TILE_SIZE * self.camera.zoom / 2.0,
-                start_pos.y - TILE_SIZE * self.camera.zoom / 2.0,
-                end_pos.x - TILE_SIZE * self.camera.zoom / 2.0,
-                end_pos.y - TILE_SIZE * self.camera.zoom / 2.0,
+                start_pos.x,
+                start_pos.y,
+                end_pos.x,
+                end_pos.y,
                 1.0,
                 Color::new(0.3, 0.3, 0.3, 1.0),
             );
@@ -143,11 +152,12 @@ impl MacroquadUI {
     pub fn highlight_selected_tile(&self) {
         if let Some(pos) = self.selected_tile {
             let screen_pos = self.camera.world_to_screen(pos);
+            let size = TILE_SIZE * self.camera.zoom;
             draw_rectangle_lines(
-                screen_pos.x - TILE_SIZE / 2.0,
-                screen_pos.y - TILE_SIZE / 2.0,
-                TILE_SIZE,
-                TILE_SIZE,
+                screen_pos.x - size / 2.0,
+                screen_pos.y - size / 2.0,
+                size,
+                size,
                 2.0,
                 YELLOW,
             );
