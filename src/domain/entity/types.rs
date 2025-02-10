@@ -11,26 +11,26 @@ pub enum Size {
     Large,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 pub enum SpeciesKind {
     Human,
     Goblin,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 pub enum MaterialKind {
     Stone,
     Flesh,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 pub struct Material {
     pub kind: MaterialKind,
     pub blocks_vision: bool,
     pub blocks_movement: bool,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 pub enum EntityKind {
     Player,
     Npc { species: SpeciesKind },
@@ -39,6 +39,7 @@ pub enum EntityKind {
     Floor { material: Material },
 }
 
+#[derive(Clone)]
 pub struct Entity {
     pub id: EntityId,
     pub kind: EntityKind,
