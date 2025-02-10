@@ -32,10 +32,10 @@ impl GameLoop {
         
         while let Ok(event) = self.event_receiver.recv() {
             let mut world = self.world.lock().unwrap();
-            event.apply(&mut world);
+            event.clone().apply(&mut world);
             drop(world);
 
-            if let GameEvent::EndTurn(_) = event {
+            if let GameEvent::EndTurn(_) = &event {
                 self.handle_next_turn();
             }
         }
