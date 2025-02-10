@@ -1,7 +1,7 @@
-pub mod attributes;
-pub mod combat;
-pub mod equipment;
-pub mod types;
+mod attributes;
+mod combat;
+mod equipment;
+mod types;
 
 pub use attributes::*;
 pub use combat::*;
