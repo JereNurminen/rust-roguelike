@@ -57,12 +57,12 @@ async fn main() {
     let (event_sender, event_receiver): (Sender<_>, Receiver<_>) = channel();
 
     // Build the application-side game loop
-    let game_loop = GameLoop {
-        world: shared_world.clone(),
-        turn_manager: shared_tm.clone(),
+    let game_loop = GameLoop::new(
+        shared_world.clone(),
+        shared_tm.clone(),
         event_receiver,
-        event_sender: event_sender.clone(),
-    };
+        event_sender.clone(),
+    );
 
     // Spawn a thread to run the turn/event processing
     std::thread::spawn(move || {
@@ -80,14 +80,13 @@ async fn main() {
     loop {
         clear_background(BLACK);
 
+        // Handle input
+        ui.handle_input();
         ui.handle_player_input(0);
-        // 1) Handle camera panning/zooming + potential tile clicks
-        ui.handle_camera_input();
 
-        // 2) Draw
+        // Draw world
         ui.draw_grid();
         ui.draw_world();
-        ui.handle_tile_selection();
         ui.highlight_selected_tile();
 
         next_frame().await;

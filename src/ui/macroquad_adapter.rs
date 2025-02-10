@@ -38,24 +38,10 @@ impl MacroquadUI {
         }
     }
 
-    pub fn handle_tile_selection(&mut self) {
+    pub fn handle_input(&mut self) {
         if let Some(clicked_tile) = self.input.handle_input(&mut self.camera) {
-            // We store the selection for later use (e.g., drawing highlight).
             self.selected_tile = Some(clicked_tile);
-            println!("Tile selected: {:?}", clicked_tile);
-        }
-    }
-
-    /// Called every frame in the main loop to handle user input for camera.
-    /// If the user clicks on a tile, we might generate a domain event or highlight something.
-    pub fn handle_camera_input(&mut self) {
-        if let Some(clicked_tile) = self.input.handle_input(&mut self.camera) {
-            // Possibly do something with `clicked_tile`,
-            // e.g. send a domain event or store a selection in the UI.
-            println!("User clicked tile: {:?}", clicked_tile);
-
-            // For example, you might want to send a "SelectTile" event:
-            // let _ = self.event_sender.send(GameEvent::SelectTile(clicked_tile.x, clicked_tile.y));
+            println!("Selected tile: {:?}", clicked_tile);
         }
     }
 
