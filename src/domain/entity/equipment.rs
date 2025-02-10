@@ -1,5 +1,5 @@
-use super::types::EntityId;
 use super::combat::Damage;
+use super::types::EntityId;
 
 pub struct Armor {}
 
@@ -20,9 +20,8 @@ pub struct Inventory {
     pub items: Vec<EntityId>,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 pub enum ItemKind {
     Weapon { damage: Vec<Damage> },
     Armor { defense: u64 },
-    Potion { effect: super::combat::PotionEffect },
 }

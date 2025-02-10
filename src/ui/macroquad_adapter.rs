@@ -29,7 +29,7 @@ impl MacroquadUI {
         Self {
             world,
             event_sender,
-            turn_manager: turn_manager,
+            turn_manager,
             camera: Camera::new(),
             input: InputHandler::new(),
             selected_tile: None,
@@ -81,12 +81,12 @@ impl MacroquadUI {
             if let Some(pos) = entity.pos() {
                 let screen_pos = self.camera.world_to_screen(pos);
 
-                let color = if *entity.kind() == EntityKind::Player {
-                    GREEN
-                } else {
-                    RED
+                let color = match entity.kind() {
+                    EntityKind::Player => GREEN,
+                    EntityKind::Npc { .. } => RED,
+                    EntityKind::Wall { .. } => GRAY,
+                    _ => WHITE,
                 };
-
                 draw_circle(screen_pos.x, screen_pos.y, 10.0 * self.camera.zoom, color);
             }
         }

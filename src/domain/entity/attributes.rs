@@ -1,3 +1,4 @@
+#[derive(Clone)]
 pub struct CoreAttributes {
     pub strength: u64,
     pub speed: u64,
@@ -35,6 +36,7 @@ pub struct Stats {
     pub hearing_threshold: u64,
 }
 
+#[derive(Clone)]
 pub enum Exhaustion {
     WellRested,
     Rested,
@@ -43,6 +45,7 @@ pub enum Exhaustion {
     Exhausted,
 }
 
+#[derive(Clone)]
 pub struct Status {
     pub health: u64,
     pub stamina: u64,
