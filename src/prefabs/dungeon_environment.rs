@@ -1,7 +1,7 @@
 use crate::domain::{
     entity::{
-        CoreAttributes, Entity, EntityId, EntityKind, Exhaustion, Material, MaterialKind,
-        SpeciesKind, Status,
+        types::EntityWithoutId, CoreAttributes, Entity, EntityId, EntityKind, Exhaustion, Material,
+        MaterialKind, SpeciesKind, Status,
     },
     world_position::WorldPosition,
 };
@@ -14,9 +14,8 @@ fn get_stone_material() -> Material {
     }
 }
 
-pub fn create_stone_wall(id: EntityId, pos: Option<WorldPosition>) -> Entity {
-    Entity {
-        id,
+pub fn create_stone_wall(pos: Option<WorldPosition>) -> EntityWithoutId {
+    EntityWithoutId {
         kind: EntityKind::Wall {
             material: get_stone_material(),
         },
@@ -39,9 +38,8 @@ pub fn create_stone_wall(id: EntityId, pos: Option<WorldPosition>) -> Entity {
     }
 }
 
-pub fn create_stone_floor(id: EntityId, pos: Option<WorldPosition>) -> Entity {
-    Entity {
-        id,
+pub fn create_stone_floor(pos: Option<WorldPosition>) -> EntityWithoutId {
+    EntityWithoutId {
         kind: EntityKind::Floor {
             material: get_stone_material(),
         },

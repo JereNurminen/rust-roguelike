@@ -7,13 +7,21 @@ use super::{
 
 pub struct World {
     pub entities: HashMap<EntityId, Entity>,
+    pub next_entity_id: EntityId,
 }
 
 impl World {
     pub fn new() -> Self {
         World {
             entities: HashMap::new(),
+            next_entity_id: 0,
         }
+    }
+
+    pub fn get_next_entity_id(&mut self) -> EntityId {
+        let id = self.next_entity_id;
+        self.next_entity_id += 1;
+        id
     }
 
     pub fn add_entity(&mut self, entity: Entity) {

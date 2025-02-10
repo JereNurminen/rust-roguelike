@@ -8,6 +8,7 @@ use std::sync::{
 
 mod application;
 mod core;
+mod debug_data;
 mod domain;
 mod prefabs;
 mod ui; // If needed
@@ -25,9 +26,10 @@ async fn main() {
     // Create the world
     let mut initial_world = World::new();
 
+    let player_id = initial_world.get_next_entity_id();
     // Add a player
     initial_world.add_entity(Entity::new(
-        0,
+        player_id,
         EntityKind::Player,
         Some(WorldPosition::new(0, 0)),
         CoreAttributes::default(),
@@ -40,10 +42,15 @@ async fn main() {
     ));
 
     // Add a goblin
-    initial_world.add_entity(prefabs::goblins::create_goblin(
-        1,
-        Some(WorldPosition::new(5, 0)),
-    ));
+    let goblin_id = initial_world.get_next_entity_id();
+    initial_world.add_entity(
+        prefabs::goblins::create_goblin(Some(WorldPosition::new(5, 0))).with_id(goblin_id),
+    );
+
+    for (_, entity) in debug_data::basic_level::get_level().into_iter().enumerate() {
+        let id = initial_world.get_next_entity_id();
+        initial_world.add_entity(entity.with_id(id));
+    }
 
     let shared_world = Arc::new(Mutex::new(initial_world));
 

@@ -1,13 +1,13 @@
 use crate::domain::{
     entity::{
-        CoreAttributes, Entity, EntityId, EntityKind, Exhaustion, SpeciesKind, Stats, Status,
+        types::EntityWithoutId, CoreAttributes, Entity, EntityId, EntityKind, Exhaustion,
+        SpeciesKind, Stats, Status,
     },
     world_position::WorldPosition,
 };
 
-pub fn create_goblin(id: EntityId, pos: Option<WorldPosition>) -> Entity {
-    Entity {
-        id,
+pub fn create_goblin(pos: Option<WorldPosition>) -> EntityWithoutId {
+    EntityWithoutId {
         kind: EntityKind::Npc {
             species: SpeciesKind::Goblin,
         },

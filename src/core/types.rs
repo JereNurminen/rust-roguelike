@@ -2,7 +2,7 @@ use macroquad::rand;
 
 pub type TurnNumber = u64;
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 pub enum Dice {
     D4,
     D6,
@@ -29,7 +29,7 @@ impl Dice {
     }
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone)]
 pub struct DieRoll {
     count: u64,
     dice: Dice,

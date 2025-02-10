@@ -1,6 +1,6 @@
-use crate::core::types::Direction;
 use super::super::world_position::WorldPosition;
 use super::attributes::{CoreAttributes, Status};
+use crate::core::types::Direction;
 
 pub type EntityId = usize;
 
@@ -42,6 +42,16 @@ pub enum EntityKind {
 #[derive(Clone)]
 pub struct Entity {
     pub id: EntityId,
+    pub kind: EntityKind,
+    pub pos: Option<WorldPosition>,
+    pub stats: CoreAttributes,
+    pub status: Status,
+    pub visible: bool,
+    pub discovered: bool,
+}
+
+#[derive(Clone)]
+pub struct EntityWithoutId {
     pub kind: EntityKind,
     pub pos: Option<WorldPosition>,
     pub stats: CoreAttributes,
@@ -101,5 +111,35 @@ impl Entity {
 
     pub fn kind(&self) -> &EntityKind {
         &self.kind
+    }
+}
+
+impl EntityWithoutId {
+    pub fn new(
+        kind: EntityKind,
+        pos: Option<WorldPosition>,
+        stats: CoreAttributes,
+        status: Status,
+    ) -> Self {
+        Self {
+            kind,
+            pos,
+            visible: false,
+            discovered: false,
+            stats,
+            status,
+        }
+    }
+
+    pub fn with_id(self, id: EntityId) -> Entity {
+        Entity {
+            id,
+            kind: self.kind,
+            pos: self.pos,
+            stats: self.stats,
+            status: self.status,
+            visible: self.visible,
+            discovered: self.discovered,
+        }
     }
 }
