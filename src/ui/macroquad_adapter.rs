@@ -3,12 +3,10 @@ use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
 
 use crate::core::types::Direction;
-use crate::domain::entity::EntityKind;
+use crate::domain::entity::{EntityId, EntityKind};
 use crate::domain::world::World;
 use crate::domain::world_position::WorldPosition;
-use crate::{
-    application::events::GameEvent, application::turns::TurnManager, domain::entity::EntityId,
-};
+use crate::{application::events::GameEvent, application::turns::TurnManager};
 
 use super::camera::{Camera, TILE_SIZE};
 use super::input_handler::InputHandler;
@@ -89,12 +87,7 @@ impl MacroquadUI {
                     RED
                 };
 
-                draw_circle(
-                    screen_pos.x,
-                    screen_pos.y,
-                    10.0 * self.camera.zoom,
-                    color
-                );
+                draw_circle(screen_pos.x, screen_pos.y, 10.0 * self.camera.zoom, color);
             }
         }
     }
