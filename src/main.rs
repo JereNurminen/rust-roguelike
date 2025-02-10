@@ -9,7 +9,7 @@ use std::sync::{
 mod application;
 mod core;
 mod domain;
-//mod infrastructure;
+mod prefabs;
 mod ui; // If needed
 
 use application::{events::GameEvent, game_loop::GameLoop, turns::TurnManager};
@@ -40,19 +40,9 @@ async fn main() {
     ));
 
     // Add a goblin
-    initial_world.add_entity(Entity::new(
+    initial_world.add_entity(prefabs::goblins::create_goblin(
         1,
-        EntityKind::Npc {
-            species: SpeciesKind::Goblin,
-        },
         Some(WorldPosition::new(5, 0)),
-        CoreAttributes::default(),
-        Status {
-            health: 10,
-            stamina: 10,
-            mana: 10,
-            exhaustion: Exhaustion::Rested,
-        },
     ));
 
     let shared_world = Arc::new(Mutex::new(initial_world));

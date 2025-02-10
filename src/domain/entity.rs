@@ -12,17 +12,17 @@ pub enum Size {
 }
 
 pub struct CoreAttributes {
-    strenght: u64,
-    speed: u64,
-    durability: u64,
-    fortitude: u64,
-    magic: u64,
+    pub strength: u64,
+    pub speed: u64,
+    pub durability: u64,
+    pub fortitude: u64,
+    pub magic: u64,
 }
 
 impl CoreAttributes {
-    pub fn new(strenght: u64, speed: u64, durability: u64, fortitude: u64, magic: u64) -> Self {
+    pub fn new(strength: u64, speed: u64, durability: u64, fortitude: u64, magic: u64) -> Self {
         Self {
-            strenght,
+            strength,
             speed,
             durability,
             fortitude,
@@ -34,7 +34,7 @@ impl CoreAttributes {
 impl Default for CoreAttributes {
     fn default() -> Self {
         Self {
-            strenght: 10,
+            strength: 10,
             speed: 10,
             durability: 10,
             fortitude: 10,
@@ -104,12 +104,12 @@ pub struct Inventory {
 
 pub struct Entity {
     pub id: EntityId,
-    kind: EntityKind,
-    pos: Option<WorldPosition>,
-    stats: CoreAttributes,
+    pub kind: EntityKind,
+    pub pos: Option<WorldPosition>,
+    pub stats: CoreAttributes,
     pub status: Status,
-    visible: bool,
-    discovered: bool,
+    pub visible: bool,
+    pub discovered: bool,
     //memory: Option<Memory>,
 }
 
@@ -120,20 +120,25 @@ pub enum SpeciesKind {
 }
 
 #[derive(PartialEq)]
-pub struct WallMaterial {
-    pub blocks_vision: bool,
+pub enum MaterialKind {
+    Stone,
+    Flesh,
 }
 
 #[derive(PartialEq)]
-pub struct FloorMaterial {}
+pub struct Material {
+    pub kind: MaterialKind,
+    pub blocks_vision: bool,
+    pub blocks_movement: bool,
+}
 
 #[derive(PartialEq)]
 pub enum EntityKind {
     Player,
     Npc { species: SpeciesKind },
     Item { kind: ItemKind },
-    Wall { material: WallMaterial },
-    Floor { material: FloorMaterial },
+    Wall { material: Material },
+    Floor { material: Material },
 }
 
 #[derive(PartialEq)]
