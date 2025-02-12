@@ -44,14 +44,17 @@ impl MacroquadUI {
     pub fn handle_input(&mut self) {
         self.mouse_position = Vec2::from(mouse_position());
         if let Some(clicked_tile) = self.input.handle_input(&mut self.camera) {
-            self.selected_tile = Some(clicked_tile);
-            
-            // Find which entity was clicked
+            // Clear previous selection if clicking on empty space
             let world = self.world.lock().unwrap();
             let entities = world.get_entities_by_pos(&clicked_tile);
             
-            // Find the entity closest to the mouse in screen space
-            if !entities.is_empty() {
+            if entities.is_empty() {
+                self.selected_tile = None;
+                self.selected_entity_id = None;
+            } else {
+                self.selected_tile = Some(clicked_tile);
+                
+                // Find the entity closest to the mouse in screen space
                 let mouse_pos = Vec2::from(mouse_position());
                 let mut closest_dist = f32::MAX;
                 let mut closest_id = None;
@@ -66,8 +69,6 @@ impl MacroquadUI {
                 }
                 
                 self.selected_entity_id = closest_id;
-            } else {
-                self.selected_entity_id = None;
             }
         }
     }
