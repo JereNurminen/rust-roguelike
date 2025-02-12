@@ -168,11 +168,11 @@ impl MacroquadUI {
             // Get entities at the selected position
             let world = self.world.lock().unwrap();
             let entities = world.get_entities_by_pos(&pos);
-            
+
             if !entities.is_empty() {
                 // Position the window near the mouse
                 root_ui().window(
-                    hash!(),  // Unique ID for the window
+                    123456,
                     Vec2::new(self.mouse_position.x + 10.0, self.mouse_position.y + 10.0),
                     Vec2::new(200.0, 100.0),
                     |ui| {
