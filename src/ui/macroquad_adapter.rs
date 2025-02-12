@@ -193,15 +193,27 @@ impl MacroquadUI {
             let world = self.world.lock().unwrap();
             let entities = world.get_entities_by_pos(&pos);
             
+            // Debug print
+            println!("Selected tile: {:?}, Selected entity: {:?}", pos, self.selected_entity_id);
+            
             if !entities.is_empty() {
-                // Find the screen position of the selected entity
+                // Debug print entities at this position
+                println!("Entities at position:");
+                for e in entities.iter() {
+                    println!("  Entity #{}: {:?}", e.id, e.kind());
+                }
+                
                 let screen_pos = if let Some(selected_id) = self.selected_entity_id {
                     if let Some(entity) = world.get_entity(selected_id) {
+                        // Debug print
+                        println!("Using position of entity #{}", selected_id);
                         self.camera.world_to_screen(entity.pos().unwrap())
                     } else {
+                        println!("Selected entity not found!");
                         self.camera.world_to_screen(pos)
                     }
                 } else {
+                    println!("No entity selected!");
                     self.camera.world_to_screen(pos)
                 };
                 
