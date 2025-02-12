@@ -170,11 +170,40 @@ impl MacroquadUI {
             let entities = world.get_entities_by_pos(&pos);
 
             if !entities.is_empty() {
-                // Position the window near the mouse
+                // Convert world position to screen position
+                let screen_pos = self.camera.world_to_screen(pos);
+                
+                // Popup dimensions
+                let popup_width = 200.0;
+                let popup_height = 100.0;
+                
+                // Calculate popup position to keep it within screen bounds
+                let screen_w = screen_width();
+                let screen_h = screen_height();
+                
+                // Start with position to the right of the clicked position
+                let mut popup_x = screen_pos.x + 20.0;
+                let mut popup_y = screen_pos.y;
+                
+                // Adjust if would go off right edge
+                if popup_x + popup_width > screen_w {
+                    popup_x = screen_pos.x - popup_width - 20.0;
+                }
+                
+                // Adjust if would go off bottom edge
+                if popup_y + popup_height > screen_h {
+                    popup_y = screen_h - popup_height - 10.0;
+                }
+                
+                // Adjust if would go off top edge
+                if popup_y < 0.0 {
+                    popup_y = 10.0;
+                }
+
                 root_ui().window(
                     123456,
-                    Vec2::new(self.mouse_position.x + 10.0, self.mouse_position.y + 10.0),
-                    Vec2::new(200.0, 100.0),
+                    Vec2::new(popup_x, popup_y),
+                    Vec2::new(popup_width, popup_height),
                     |ui| {
                         for entity in entities {
                             let description = match entity.kind() {
