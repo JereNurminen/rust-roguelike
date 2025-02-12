@@ -20,6 +20,7 @@ pub struct MacroquadUI {
     pub input: InputHandler,
     pub selected_tile: Option<WorldPosition>,
     pub mouse_position: Vec2,
+    pub selected_entity_id: Option<EntityId>,
 }
 
 impl MacroquadUI {
@@ -36,6 +37,7 @@ impl MacroquadUI {
             input: InputHandler::new(),
             selected_tile: None,
             mouse_position: Vec2::ZERO,
+            selected_entity_id: None,
         }
     }
 
@@ -43,7 +45,30 @@ impl MacroquadUI {
         self.mouse_position = Vec2::from(mouse_position());
         if let Some(clicked_tile) = self.input.handle_input(&mut self.camera) {
             self.selected_tile = Some(clicked_tile);
-            println!("Selected tile: {:?}", clicked_tile);
+            
+            // Find which entity was clicked
+            let world = self.world.lock().unwrap();
+            let entities = world.get_entities_by_pos(&clicked_tile);
+            
+            // Find the entity closest to the mouse in screen space
+            if !entities.is_empty() {
+                let mouse_pos = Vec2::from(mouse_position());
+                let mut closest_dist = f32::MAX;
+                let mut closest_id = None;
+                
+                for entity in entities {
+                    let entity_screen_pos = self.camera.world_to_screen(entity.pos().unwrap());
+                    let dist = mouse_pos.distance(entity_screen_pos);
+                    if dist < closest_dist {
+                        closest_dist = dist;
+                        closest_id = Some(entity.id);
+                    }
+                }
+                
+                self.selected_entity_id = closest_id;
+            } else {
+                self.selected_entity_id = None;
+            }
         }
     }
 
@@ -165,13 +190,20 @@ impl MacroquadUI {
 
     fn draw_popup(&self) {
         if let Some(pos) = self.selected_tile {
-            // Get entities at the selected position
             let world = self.world.lock().unwrap();
             let entities = world.get_entities_by_pos(&pos);
-
+            
             if !entities.is_empty() {
-                // Convert world position to screen position
-                let screen_pos = self.camera.world_to_screen(pos);
+                // Find the screen position of the selected entity
+                let screen_pos = if let Some(selected_id) = self.selected_entity_id {
+                    if let Some(entity) = world.get_entity(selected_id) {
+                        self.camera.world_to_screen(entity.pos().unwrap())
+                    } else {
+                        self.camera.world_to_screen(pos)
+                    }
+                } else {
+                    self.camera.world_to_screen(pos)
+                };
                 
                 // Popup dimensions
                 let popup_width = 200.0;
