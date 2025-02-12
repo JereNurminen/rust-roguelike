@@ -181,23 +181,27 @@ impl MacroquadUI {
                 let screen_w = screen_width();
                 let screen_h = screen_height();
                 
-                // Start with position to the right of the clicked position
-                let mut popup_x = screen_pos.x + 20.0;
-                let mut popup_y = screen_pos.y;
+                // Entity radius in screen space
+                let entity_radius = 10.0 * self.camera.zoom;
+                
+                // Start with position to the right of the entity
+                let mut popup_x = screen_pos.x + entity_radius + 5.0;
+                let mut popup_y = screen_pos.y - popup_height / 2.0;
                 
                 // Adjust if would go off right edge
                 if popup_x + popup_width > screen_w {
-                    popup_x = screen_pos.x - popup_width - 20.0;
+                    // Place to the left of the entity instead
+                    popup_x = screen_pos.x - entity_radius - 5.0 - popup_width;
                 }
                 
                 // Adjust if would go off bottom edge
                 if popup_y + popup_height > screen_h {
-                    popup_y = screen_h - popup_height - 10.0;
+                    popup_y = screen_h - popup_height - 5.0;
                 }
                 
                 // Adjust if would go off top edge
-                if popup_y < 0.0 {
-                    popup_y = 10.0;
+                if popup_y < 5.0 {
+                    popup_y = 5.0;
                 }
 
                 root_ui().window(
