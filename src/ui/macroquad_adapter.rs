@@ -1,4 +1,5 @@
 use macroquad::prelude::*;
+use macroquad::ui::{root_ui, widgets};
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
 
@@ -18,6 +19,7 @@ pub struct MacroquadUI {
     pub camera: Camera,
     pub input: InputHandler,
     pub selected_tile: Option<WorldPosition>,
+    pub mouse_position: Vec2,
 }
 
 impl MacroquadUI {
@@ -33,10 +35,12 @@ impl MacroquadUI {
             camera: Camera::new(),
             input: InputHandler::new(),
             selected_tile: None,
+            mouse_position: Vec2::ZERO,
         }
     }
 
     pub fn handle_input(&mut self) {
+        self.mouse_position = Vec2::from(mouse_position());
         if let Some(clicked_tile) = self.input.handle_input(&mut self.camera) {
             self.selected_tile = Some(clicked_tile);
             println!("Selected tile: {:?}", clicked_tile);
@@ -90,6 +94,8 @@ impl MacroquadUI {
                 draw_circle(screen_pos.x, screen_pos.y, 10.0 * self.camera.zoom, color);
             }
         }
+        drop(world_guard);
+        self.draw_popup();
     }
 
     /// Draw a grid of lines in the visible region of the camera.
@@ -154,6 +160,35 @@ impl MacroquadUI {
                 2.0,
                 YELLOW,
             );
+        }
+    }
+
+    fn draw_popup(&self) {
+        if let Some(pos) = self.selected_tile {
+            // Get entities at the selected position
+            let world = self.world.lock().unwrap();
+            let entities = world.get_entities_by_pos(&pos);
+            
+            if !entities.is_empty() {
+                // Position the window near the mouse
+                root_ui().window(
+                    hash!(),  // Unique ID for the window
+                    Vec2::new(self.mouse_position.x + 10.0, self.mouse_position.y + 10.0),
+                    Vec2::new(200.0, 100.0),
+                    |ui| {
+                        for entity in entities {
+                            let description = match entity.kind() {
+                                EntityKind::Player => "Player".to_string(),
+                                EntityKind::Npc { species } => format!("{:?}", species),
+                                EntityKind::Wall { .. } => "Wall".to_string(),
+                                EntityKind::Floor { .. } => "Floor".to_string(),
+                                _ => "Unknown".to_string(),
+                            };
+                            ui.label(None, &description);
+                        }
+                    },
+                );
+            }
         }
     }
 }
