@@ -1,5 +1,5 @@
 use macroquad::prelude::*;
-use macroquad::ui::{root_ui, widgets};
+use macroquad::ui::{hash, root_ui, widgets};
 use std::sync::mpsc::Sender;
 use std::sync::{Arc, Mutex};
 
@@ -46,7 +46,7 @@ impl MacroquadUI {
         if let Some(clicked_tile) = self.input.handle_input(&mut self.camera) {
             let world = self.world.lock().unwrap();
             let entities = world.get_entities_by_pos(&clicked_tile);
-            
+
             if !entities.is_empty() {
                 self.selected_tile = Some(clicked_tile);
                 // Just take the first entity for now
@@ -180,17 +180,17 @@ impl MacroquadUI {
             if let Some(entity) = world.get_entity(entity_id) {
                 if let Some(pos) = entity.pos() {
                     let screen_pos = self.camera.world_to_screen(pos);
-                    
+
                     // Popup dimensions
                     let popup_width = 200.0;
                     let popup_height = 100.0;
-                    
+
                     // Position to the right of the entity
                     let popup_x = screen_pos.x + 20.0;
                     let popup_y = screen_pos.y;
 
                     root_ui().window(
-                        123456,
+                        hash!(entity_id + popup_x as usize + popup_y as usize),
                         Vec2::new(popup_x, popup_y),
                         Vec2::new(popup_width, popup_height),
                         |ui| {

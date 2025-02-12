@@ -1,6 +1,6 @@
 use crate::core::types::DieRoll;
 
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Clone, Debug)]
 pub enum DamageType {
     Slice,
     Pierce,
@@ -8,7 +8,7 @@ pub enum DamageType {
     Fire,
 }
 
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Clone, Debug)]
 pub struct Damage {
     pub damage_type: DamageType,
     pub damage: DieRoll,

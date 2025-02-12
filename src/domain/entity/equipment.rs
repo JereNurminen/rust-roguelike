@@ -20,7 +20,7 @@ pub struct Inventory {
     pub items: Vec<EntityId>,
 }
 
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Clone, Debug)]
 pub enum ItemKind {
     Weapon { damage: Vec<Damage> },
     Armor { defense: u64 },
