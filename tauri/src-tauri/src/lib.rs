@@ -1,6 +1,10 @@
 use core::{
-    create_initial_game_state, GameEvent, GameState,
-    application::state_changes::{StateChange, StateChanges},
+    create_initial_game_state,
+    application::{
+        events::GameEvent,
+        game_loop::GameState,
+        state_changes::{StateChange, StateChanges},
+    },
     core::types::Direction,
     domain::world_position::WorldPosition,
 };

@@ -1,17 +1,17 @@
 // src/main.rs
-mod application;
-mod core;
-mod debug_data;
-mod domain;
-mod prefabs;
+pub mod application;
+pub mod core;
+pub mod debug_data;
+pub mod domain;
+pub mod prefabs;
 
-pub use application::{
+use application::{
     events::GameEvent,
     game_loop::GameState,
     state_changes::{StateChange, StateChanges},
     turns::TurnManager,
 };
-pub use domain::{
+use domain::{
     entity::{CoreAttributes, Entity, EntityKind, EntityId, Exhaustion, Status},
     world::World,
     world_position::WorldPosition,
