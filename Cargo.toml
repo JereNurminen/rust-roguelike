@@ -1,5 +1,2 @@
 [workspace]
-members = [
-    "core",            # your existing game logic
-    "tauri/src-tauri", # new tauri application
-]
+members = ["core", "tauri/src-tauri"]
