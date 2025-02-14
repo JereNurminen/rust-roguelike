@@ -3,76 +3,56 @@ use crate::{
     core::types::Direction,
     domain::{entity::EntityId, world::World},
 };
-use std::sync::{
-    mpsc::{Receiver, Sender},
-    Arc, Mutex,
-};
 
-pub struct GameLoop {
-    world: Arc<Mutex<World>>,
-    turn_manager: Arc<Mutex<TurnManager>>,
-    event_receiver: Receiver<GameEvent>,
-    event_sender: Sender<GameEvent>,
+pub struct GameState {
+    pub world: World,
+    pub turn_manager: TurnManager,
 }
 
-impl GameLoop {
-    pub fn new(
-        world: Arc<Mutex<World>>,
-        turn_manager: Arc<Mutex<TurnManager>>,
-        event_receiver: Receiver<GameEvent>,
-        event_sender: Sender<GameEvent>,
-    ) -> Self {
-        Self {
-            world,
-            turn_manager,
-            event_receiver,
-            event_sender,
-        }
+impl GameState {
+    pub fn new(world: World, turn_manager: TurnManager) -> Self {
+        Self { world, turn_manager }
     }
 
-    pub fn run(&self) {
-        self.initialize_turns();
-
-        while let Ok(event) = self.event_receiver.recv() {
-            let mut world = self.world.lock().unwrap();
-            event.clone().apply(&mut world);
-            drop(world);
-
-            if let GameEvent::EndTurn(_) = &event {
-                self.handle_next_turn();
+    pub fn handle_event(&mut self, event: GameEvent) -> StateChanges {
+        let mut changes = event.get_changes(&self.world);
+        
+        // Apply the changes to our state
+        for change in &changes {
+            match change {
+                StateChange::EntityMoved { entity_id, to, .. } => {
+                    if let Some(entity) = self.world.get_entity_mut(*entity_id) {
+                        entity.set_pos(*to);
+                    }
+                }
+                StateChange::TurnEnded { entity_id } => {
+                    if let Some(next_id) = self.turn_manager.next_turn() {
+                        changes.push(StateChange::TurnStarted { entity_id: next_id });
+                        
+                        // Handle AI turns
+                        if next_id != 0 {
+                            // Simple AI just moves north
+                            let ai_changes = self.handle_event(
+                                GameEvent::MoveByDirection(next_id, Direction::North)
+                            );
+                            changes.extend(ai_changes);
+                            
+                            // End AI turn
+                            let end_turn_changes = self.handle_event(
+                                GameEvent::EndTurn(next_id)
+                            );
+                            changes.extend(end_turn_changes);
+                        }
+                    }
+                }
+                _ => {}
             }
         }
+        
+        changes
     }
 
-    fn initialize_turns(&self) {
-        let mut tm = self.turn_manager.lock().unwrap();
-        if tm.current_entity().is_none() {
-            if let Some(id) = tm.next_turn() {
-                println!("Starting first turn with Entity #{}", id);
-            }
-        }
-    }
-
-    fn handle_next_turn(&self) {
-        let next_id = {
-            let mut tm = self.turn_manager.lock().unwrap();
-            tm.next_turn()
-        };
-
-        if let Some(id) = next_id {
-            println!("Starting turn for Entity #{}", id);
-            if id != 0 {
-                // Non-player entity
-                self.run_ai_turn(id);
-            }
-        }
-    }
-
-    fn run_ai_turn(&self, entity_id: EntityId) {
-        // Simple AI just moves north and ends turn
-        let _ = self
-            .event_sender
-            .send(GameEvent::MoveByDirection(entity_id, Direction::North));
-        let _ = self.event_sender.send(GameEvent::EndTurn(entity_id));
+    pub fn get_current_entity(&self) -> Option<EntityId> {
+        self.turn_manager.current_entity()
     }
 }
