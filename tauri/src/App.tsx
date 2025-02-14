@@ -1,49 +1,63 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
+import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import { GameRenderer } from "./components/GameRenderer";
 import "./App.css";
 
-function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
+interface Entity {
+  id: number;
+  kind: string;
+  pos: { x: number; y: number } | null;
+}
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke("greet", { name }));
-  }
+function App() {
+  const [entities, setEntities] = useState<Entity[]>([]);
+  const [selectedTile, setSelectedTile] = useState<{ x: number; y: number } | null>(null);
+
+  useEffect(() => {
+    // Initial game state
+    updateGameState();
+  }, []);
+
+  const updateGameState = async () => {
+    const state = await invoke<Entity[]>("get_game_state");
+    setEntities(state);
+  };
+
+  const handleTileClick = async (x: number, y: number) => {
+    setSelectedTile({ x, y });
+    const entitiesAtPos = await invoke<Entity[]>("get_entities_at_position", { x, y });
+    if (entitiesAtPos.length > 0) {
+      console.log("Selected entities:", entitiesAtPos);
+    }
+  };
+
+  const handleKeyPress = async (event: KeyboardEvent) => {
+    let direction = null;
+    switch (event.key) {
+      case 'h': direction = 'West'; break;
+      case 'j': direction = 'South'; break;
+      case 'k': direction = 'North'; break;
+      case 'l': direction = 'East'; break;
+    }
+    
+    if (direction) {
+      await invoke("move_player", { direction });
+      await updateGameState();
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, []);
 
   return (
     <main className="container">
-      <h1>Welcome to Tauri + React</h1>
-
-      <div className="row">
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" className="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" className="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <p>Click on the Tauri, Vite, and React logos to learn more.</p>
-
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
-        <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
-        />
-        <button type="submit">Greet</button>
-      </form>
-      <p>{greetMsg}</p>
+      <GameRenderer
+        entities={entities}
+        selectedTile={selectedTile}
+        onTileClick={handleTileClick}
+      />
     </main>
   );
 }
