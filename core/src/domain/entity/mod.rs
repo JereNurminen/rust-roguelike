@@ -1,3 +1,4 @@
+pub mod ai;
 pub mod attributes;
 pub mod combat;
 pub mod equipment;

@@ -1,4 +1,5 @@
 use super::super::world_position::WorldPosition;
+use super::ai::Ai;
 use super::attributes::{CoreAttributes, Status};
 use crate::core::types::Direction;
 
@@ -65,6 +66,7 @@ pub struct Entity {
     pub status: Status,
     pub visible: bool,
     pub discovered: bool,
+    pub ai: Option<Ai>,
 }
 
 #[derive(Clone)]
@@ -75,6 +77,7 @@ pub struct EntityWithoutId {
     pub status: Status,
     pub visible: bool,
     pub discovered: bool,
+    pub ai: Option<Ai>,
 }
 
 impl Entity {
@@ -84,6 +87,7 @@ impl Entity {
         pos: Option<WorldPosition>,
         stats: CoreAttributes,
         status: Status,
+        ai: Option<Ai>,
     ) -> Self {
         Self {
             id,
@@ -93,6 +97,7 @@ impl Entity {
             discovered: false,
             stats,
             status,
+            ai,
         }
     }
 
@@ -104,7 +109,7 @@ impl Entity {
         self.pos = pos.clone();
     }
 
-    pub fn can_move_to(&self, pos: &WorldPosition, entities_in_pos: Vec<&Entity>) -> bool {
+    pub fn can_move_to(&self, entities_in_pos: Vec<Entity>) -> bool {
         entities_in_pos.iter().all(|e| match *e.kind() {
             EntityKind::Wall { .. } => false,
             _ => true,
@@ -133,6 +138,10 @@ impl Entity {
         }
     }
 
+    pub fn ai(&self) -> Option<&Ai> {
+        self.ai.as_ref()
+    }
+
     pub fn kind(&self) -> &EntityKind {
         &self.kind
     }
@@ -144,6 +153,7 @@ impl EntityWithoutId {
         pos: Option<WorldPosition>,
         stats: CoreAttributes,
         status: Status,
+        ai: Option<Ai>,
     ) -> Self {
         Self {
             kind,
@@ -152,6 +162,7 @@ impl EntityWithoutId {
             discovered: false,
             stats,
             status,
+            ai,
         }
     }
 
@@ -164,6 +175,7 @@ impl EntityWithoutId {
             status: self.status,
             visible: self.visible,
             discovered: self.discovered,
+            ai: self.ai,
         }
     }
 }

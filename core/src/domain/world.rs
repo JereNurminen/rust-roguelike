@@ -8,13 +8,15 @@ use super::{
 pub struct World {
     pub entities: HashMap<EntityId, Entity>,
     pub next_entity_id: EntityId,
+    pub player_id: EntityId,
 }
 
 impl World {
-    pub fn new() -> Self {
+    pub fn new(player_id: EntityId) -> Self {
         World {
             entities: HashMap::new(),
-            next_entity_id: 0,
+            player_id,
+            next_entity_id: player_id + 1,
         }
     }
 

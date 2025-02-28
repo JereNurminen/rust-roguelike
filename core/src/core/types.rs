@@ -1,5 +1,3 @@
-use macroquad::rand;
-
 pub type TurnNumber = u64;
 
 #[derive(PartialEq, Clone, Debug)]
@@ -43,7 +41,7 @@ impl DieRoll {
             _ => {
                 // Repeat this process count times
                 (0..self.count)
-                    .map(|_| rand::gen_range(1, self.dice.sides()))
+                    .map(|_| rand::random_range(1..self.dice.sides()))
                     .sum()
             }
         };

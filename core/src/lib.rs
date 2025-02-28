@@ -5,23 +5,18 @@ pub mod debug_data;
 pub mod domain;
 pub mod prefabs;
 
-use application::{
-    events::GameEvent,
-    game_loop::GameState,
-    state_changes::{StateChange, StateChanges},
-    turns::TurnManager,
-};
+use application::{events::GameEvent, game_loop::GameState, turns::TurnManager};
 use domain::{
-    entity::{CoreAttributes, Entity, EntityKind, EntityId, Exhaustion, Status},
+    entity::{CoreAttributes, Entity, EntityId, EntityKind, Exhaustion, Status},
     world::World,
     world_position::WorldPosition,
 };
 
 pub fn create_initial_game_state() -> GameState {
-    let mut world = World::new();
-    
+    let player_id = 1;
+    let mut world = World::new(player_id);
+
     // Add player
-    let player_id = world.get_next_entity_id();
     world.add_entity(Entity::new(
         player_id,
         EntityKind::Player,
@@ -33,6 +28,7 @@ pub fn create_initial_game_state() -> GameState {
             mana: 10,
             exhaustion: Exhaustion::Rested,
         },
+        None,
     ));
 
     // Add goblin

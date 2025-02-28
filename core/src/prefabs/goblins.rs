@@ -1,6 +1,6 @@
 use crate::domain::{
     entity::{
-        types::EntityWithoutId, CoreAttributes, Entity, EntityId, EntityKind, Exhaustion,
+        ai::Ai, types::EntityWithoutId, CoreAttributes, Entity, EntityId, EntityKind, Exhaustion,
         SpeciesKind, Stats, Status,
     },
     world_position::WorldPosition,
@@ -27,5 +27,6 @@ pub fn create_goblin(pos: Option<WorldPosition>) -> EntityWithoutId {
         },
         visible: true,
         discovered: false,
+        ai: Some(Ai::new()),
     }
 }
