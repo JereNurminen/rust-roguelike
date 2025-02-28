@@ -1,107 +1,70 @@
-use core::{
-    create_initial_game_state,
-    application::{
-        events::GameEvent,
-        game_loop::GameState,
-        state_changes::{StateChange, StateChanges},
-    },
+use engine::{
+    application::{events::GameEvent, game_loop::GameState},
     core::types::Direction,
-    domain::world_position::WorldPosition,
+    create_initial_game_state,
+    domain::{world::World, world_position::WorldPosition},
 };
+use serde::Serialize;
+use specta::Type;
+use specta_typescript::Typescript;
 use std::sync::Mutex;
 use tauri::State;
-use serde_json::Value as JsonValue;
+use tauri_specta::collect_commands;
+use ts_rs::TS;
 
-struct GameStateWrapper(Mutex<GameState>);
-
-#[tauri::command]
-fn get_game_state(state: State<GameStateWrapper>) -> Result<JsonValue, String> {
-    let game_state = state.0.lock().map_err(|e| e.to_string())?;
-    
-    let entities = game_state.world.entities.values().map(|entity| {
-        serde_json::json!({
-            "id": entity.id,
-            "kind": format!("{:?}", entity.kind()),
-            "pos": entity.pos().map(|p| {
-                serde_json::json!({
-                    "x": p.x,
-                    "y": p.y
-                })
-            })
-        })
-    }).collect::<Vec<_>>();
-    
-    Ok(serde_json::json!({ "entities": entities }))
+#[derive(Serialize, TS, Type)]
+#[ts(export)]
+struct ClientGameState {
+    pub world: World,
 }
 
-#[tauri::command]
-fn get_entities_at_position(
-    x: i32,
-    y: i32,
-    state: State<GameStateWrapper>
-) -> Result<JsonValue, String> {
-    let game_state = state.0.lock().map_err(|e| e.to_string())?;
-    let pos = WorldPosition::new(x, y);
-    
-    let entities = game_state.world.get_entities_by_pos(&pos)
-        .into_iter()
-        .map(|entity| {
-            serde_json::json!({
-                "id": entity.id,
-                "kind": format!("{:?}", entity.kind()),
-                "pos": entity.pos().map(|p| {
-                    serde_json::json!({
-                        "x": p.x,
-                        "y": p.y
-                    })
-                })
-            })
-        })
-        .collect::<Vec<_>>();
-    
-    Ok(serde_json::json!(entities))
+impl From<World> for ClientGameState {
+    fn from(state: World) -> ClientGameState {
+        ClientGameState { world: state }
+    }
 }
 
+type GameStateWrapper<'a> = State<'a, Mutex<GameState>>;
+
+#[specta::specta]
 #[tauri::command]
-fn move_player(
-    direction: String,
-    state: State<GameStateWrapper>
-) -> Result<StateChanges, String> {
-    let mut game_state = state.0.lock().map_err(|e| e.to_string())?;
-    
-    let direction = match direction.as_str() {
-        "North" => Direction::North,
-        "South" => Direction::South,
-        "East" => Direction::East,
-        "West" => Direction::West,
-        _ => return Err("Invalid direction".to_string()),
-    };
-    
-    if let Some(player_id) = game_state.get_current_entity() {
-        let changes = game_state.handle_event(GameEvent::MoveByDirection(player_id, direction));
-        if !changes.is_empty() {
-            let end_turn_changes = game_state.handle_event(GameEvent::EndTurn(player_id));
-            Ok([changes, end_turn_changes].concat())
-        } else {
-            Ok(changes)
-        }
+fn get_game_state(state: GameStateWrapper) -> Result<ClientGameState, String> {
+    if let Ok(game_state) = state.lock() {
+        Ok(ClientGameState::from(game_state.world.clone()))
     } else {
-        Err("No current entity".to_string())
+        Err("Error fetching game state from back end".to_string())
+    }
+}
+
+#[specta::specta]
+#[tauri::command]
+fn move_player(state: GameStateWrapper, direction: Direction) -> Result<ClientGameState, String> {
+    if let Ok(mut game_state) = state.lock() {
+        let player_id = game_state.world.player_id;
+
+        game_state.handle_event(GameEvent::MoveByDirection(player_id, direction));
+        Ok(ClientGameState::from(game_state.world.clone()))
+    } else {
+        Err("Error applying player move event".to_string())
     }
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let game_state = GameStateWrapper(Mutex::new(create_initial_game_state()));
+    let state = Mutex::new(create_initial_game_state());
+
+    tauri_specta::Builder::<tauri::Wry>::new()
+        .commands(collect_commands![get_game_state, move_player])
+        .export(
+            Typescript::default().bigint(specta_typescript::BigIntExportBehavior::Number),
+            "../src/bindings.ts",
+        )
+        .expect("Failed to export typescript bindings");
 
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .manage(game_state)
-        .invoke_handler(tauri::generate_handler![
-            get_game_state,
-            get_entities_at_position,
-            move_player
-        ])
+        .manage(state)
+        .invoke_handler(tauri::generate_handler![get_game_state, move_player])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

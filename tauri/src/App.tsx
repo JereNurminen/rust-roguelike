@@ -2,16 +2,15 @@ import { useState, useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { GameRenderer } from "./components/GameRenderer";
 import "./App.css";
-
-interface Entity {
-  id: number;
-  kind: string;
-  pos: { x: number; y: number } | null;
-}
+import api from "./api";
+import { Entity } from "./bindings";
 
 function App() {
   const [entities, setEntities] = useState<Entity[]>([]);
-  const [selectedTile, setSelectedTile] = useState<{ x: number; y: number } | null>(null);
+  const [selectedTile, setSelectedTile] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
 
   useEffect(() => {
     // Initial game state
@@ -19,13 +18,18 @@ function App() {
   }, []);
 
   const updateGameState = async () => {
-    const state = await invoke<Entity[]>("get_game_state");
-    setEntities(state);
+    const state = await api.getGameState();
+    if (state.status === "ok") {
+      setEntities(Object.values(state.data.world.entities).filter((x) => !!x));
+    }
   };
 
   const handleTileClick = async (x: number, y: number) => {
     setSelectedTile({ x, y });
-    const entitiesAtPos = await invoke<Entity[]>("get_entities_at_position", { x, y });
+    const entitiesAtPos = await invoke<Entity[]>("get_entities_at_position", {
+      x,
+      y,
+    });
     if (entitiesAtPos.length > 0) {
       console.log("Selected entities:", entitiesAtPos);
     }
@@ -34,12 +38,20 @@ function App() {
   const handleKeyPress = async (event: KeyboardEvent) => {
     let direction = null;
     switch (event.key) {
-      case 'h': direction = 'West'; break;
-      case 'j': direction = 'South'; break;
-      case 'k': direction = 'North'; break;
-      case 'l': direction = 'East'; break;
+      case "h":
+        direction = "West";
+        break;
+      case "j":
+        direction = "South";
+        break;
+      case "k":
+        direction = "North";
+        break;
+      case "l":
+        direction = "East";
+        break;
     }
-    
+
     if (direction) {
       await invoke("move_player", { direction });
       await updateGameState();
@@ -47,8 +59,8 @@ function App() {
   };
 
   useEffect(() => {
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
   }, []);
 
   return (

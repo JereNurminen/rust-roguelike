@@ -1,4 +1,9 @@
-#[derive(Clone)]
+use serde::Serialize;
+use specta::Type;
+use ts_rs::TS;
+
+#[derive(Debug, Clone, Serialize, TS, Type)]
+#[ts(export)]
 pub struct CoreAttributes {
     pub strength: u64,
     pub speed: u64,
@@ -36,7 +41,8 @@ pub struct Stats {
     pub hearing_threshold: u64,
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone, Serialize, TS, Type)]
+#[ts(export)]
 pub enum Exhaustion {
     WellRested,
     Rested,
@@ -45,7 +51,8 @@ pub enum Exhaustion {
     Exhausted,
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone, Serialize, TS, Type)]
+#[ts(export)]
 pub struct Status {
     pub health: u64,
     pub stamina: u64,

@@ -1,3 +1,7 @@
+use serde::Serialize;
+use specta::Type;
+use ts_rs::TS;
+
 use super::EntityId;
 use crate::{
     application::events::GameEvent,
@@ -5,19 +9,22 @@ use crate::{
     domain::{world::World, world_position::WorldPosition},
 };
 
-#[derive(Clone)]
+#[derive(Debug, Clone, Serialize, TS, Type)]
+#[ts(export)]
 pub struct LastSeen {
     entity: EntityId,
     position: WorldPosition,
     on_turn: usize,
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone, Serialize, TS, Type)]
+#[ts(export)]
 pub struct Memory {
     last_seen_positions: Vec<LastSeen>,
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone, Serialize, TS, Type)]
+#[ts(export)]
 pub struct Ai {
     memory: Memory,
 }

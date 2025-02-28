@@ -1,3 +1,7 @@
+use serde::Serialize;
+use specta::Type;
+use ts_rs::TS;
+
 use super::combat::Damage;
 use super::types::EntityId;
 
@@ -20,7 +24,8 @@ pub struct Inventory {
     pub items: Vec<EntityId>,
 }
 
-#[derive(PartialEq, Clone, Debug)]
+#[derive(PartialEq, Clone, Debug, Serialize, TS, Type)]
+#[ts(export)]
 pub enum ItemKind {
     Weapon { damage: Vec<Damage> },
     Armor { defense: u64 },

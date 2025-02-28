@@ -14,10 +14,16 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
+serde = { version = "1.0", features = ["derive"] }
+ts-rs = { version = "^10.0.0" }
 
 [dependencies]
-tauri = { version = "2", features = [] }
+tauri = { version = "2", features = ["specta"] }
 tauri-plugin-opener = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-core = { path = "../../core" }
+engine = { path = "../../engine" }
+ts-rs = "10.1.0"
+specta = "2.0.0-rc.22"
+tauri-specta = { version = "2.0.0-rc.21", features = ["derive", "typescript"] }
+specta-typescript = "0.0.9"

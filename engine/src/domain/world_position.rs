@@ -1,6 +1,10 @@
 use std::fmt::Display;
 
-#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug, serde::Serialize)]
+use specta::Type;
+use ts_rs::TS;
+
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug, serde::Serialize, TS, Type)]
+#[ts(export)]
 pub struct WorldPosition {
     pub x: i32,
     pub y: i32,

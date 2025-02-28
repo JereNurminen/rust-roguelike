@@ -1,3 +1,5 @@
+use std::ops::{Deref, DerefMut};
+
 use crate::{
     application::{events::GameEvent, turns::TurnManager},
     core::types::Direction,

@@ -1,6 +1,11 @@
+use serde::{Deserialize, Serialize};
+use specta::Type;
+use ts_rs::TS;
+
 pub type TurnNumber = u64;
 
-#[derive(PartialEq, Clone, Debug)]
+#[derive(PartialEq, Clone, Debug, Serialize, TS, Type)]
+#[ts(export)]
 pub enum Dice {
     D4,
     D6,
@@ -27,7 +32,8 @@ impl Dice {
     }
 }
 
-#[derive(PartialEq, Clone, Debug)]
+#[derive(PartialEq, Clone, Debug, Serialize, TS, Type)]
+#[ts(export)]
 pub struct DieRoll {
     count: u64,
     dice: Dice,
@@ -49,7 +55,8 @@ impl DieRoll {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, TS, Type, Deserialize)]
+#[ts(export)]
 pub enum Direction {
     North,
     //NorthEast,

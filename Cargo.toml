@@ -1,2 +1,2 @@
 [workspace]
-members = ["core", "tauri/src-tauri"]
+members = ["engine", "tauri/src-tauri"]

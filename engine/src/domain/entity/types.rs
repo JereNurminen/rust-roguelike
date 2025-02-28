@@ -1,3 +1,7 @@
+use serde::Serialize;
+use specta::Type;
+use ts_rs::TS;
+
 use super::super::world_position::WorldPosition;
 use super::ai::Ai;
 use super::attributes::{CoreAttributes, Status};
@@ -12,19 +16,22 @@ pub enum Size {
     Large,
 }
 
-#[derive(PartialEq, Clone, Debug)]
+#[derive(PartialEq, Clone, Debug, Serialize, TS, Type)]
+#[ts(export)]
 pub enum SpeciesKind {
     Human,
     Goblin,
 }
 
-#[derive(PartialEq, Clone, Debug)]
+#[derive(PartialEq, Clone, Debug, Serialize, TS, Type)]
+#[ts(export)]
 pub enum MaterialKind {
     Stone,
     Flesh,
 }
 
-#[derive(PartialEq, Clone, Debug)]
+#[derive(PartialEq, Clone, Debug, Serialize, TS, Type)]
+#[ts(export)]
 pub struct Material {
     pub kind: MaterialKind,
     pub blocks_vision: bool,
@@ -48,7 +55,9 @@ impl MaterialKind {
     }
 }
 
-#[derive(PartialEq, Clone, Debug)]
+#[derive(PartialEq, Clone, Debug, Serialize, TS, Type)]
+#[serde(tag = "type")]
+#[ts(export)]
 pub enum EntityKind {
     Player,
     Npc { species: SpeciesKind },
@@ -57,7 +66,9 @@ pub enum EntityKind {
     Floor { material: Material },
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone, Serialize, TS, Type)]
+#[ts(export)]
+
 pub struct Entity {
     pub id: EntityId,
     pub kind: EntityKind,

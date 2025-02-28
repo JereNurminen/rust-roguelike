@@ -1,10 +1,16 @@
 use std::collections::{HashMap, HashSet};
 
+use serde::Serialize;
+use specta::Type;
+use ts_rs::TS;
+
 use super::{
     entity::{Entity, EntityId, EntityKind},
     world_position::WorldPosition,
 };
 
+#[derive(Debug, Clone, Serialize, TS, Type)]
+#[ts(export)]
 pub struct World {
     pub entities: HashMap<EntityId, Entity>,
     pub next_entity_id: EntityId,
