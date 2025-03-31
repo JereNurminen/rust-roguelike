@@ -1,0 +1,44 @@
+body,
+html {
+    padding: 0;
+    margin: 0;
+    background-color: #090909;
+}
+
+#container {
+    display: grid;
+    grid-template-areas:
+        "header header"
+        "main sidebar"
+        "footer footer";
+    grid-template-rows: auto 1fr auto;
+    grid-template-columns: 1fr auto;
+    width: 100vw;
+    height: 100vh;
+
+    #top-bar {
+        grid-area: header;
+        height: 40px;
+    }
+
+    #game-container {
+        grid-area: main;
+
+        #pixi-canvas {
+            width: 100%;
+            height: 100%;
+        }
+    }
+
+    #side-panel {
+        grid-area: sidebar;
+        width: 20%;
+        min-width: 400px;
+        max-width: 400px;
+    }
+
+    #bottom-bar {
+        grid-area: footer;
+        height: 40px;
+    }
+}

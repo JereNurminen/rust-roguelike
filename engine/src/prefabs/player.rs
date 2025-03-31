@@ -6,7 +6,7 @@ use crate::domain::{
     world_position::WorldPosition,
 };
 
-pub fn create_goblin(pos: Option<WorldPosition>) -> EntityWithoutId {
+pub fn create_player(pos: Option<WorldPosition>) -> EntityWithoutId {
     EntityWithoutId {
         kind: EntityKind::Npc {
             species: SpeciesKind::Goblin,
@@ -28,6 +28,5 @@ pub fn create_goblin(pos: Option<WorldPosition>) -> EntityWithoutId {
         visible: true,
         discovered: false,
         ai: Some(Ai::new()),
-        last_seen_at: None,
     }
 }

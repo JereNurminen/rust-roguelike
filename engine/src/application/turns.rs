@@ -2,11 +2,8 @@ use std::collections::VecDeque;
 
 use crate::domain::entity::EntityId;
 
-/// Manages the order in which entities take turns.
 pub struct TurnManager {
-    /// The ordered queue of entity IDs that will take turns.
     turn_queue: VecDeque<EntityId>,
-    /// The entity currently taking its turn (if any).
     current: Option<EntityId>,
 }
 
@@ -18,26 +15,22 @@ impl TurnManager {
         }
     }
 
-    /// Initialize the queue with given IDs, ensuring the player is first.
-    /// For simplicity, we assume `player_id` must always be the first entity.
     pub fn initialize(&mut self, player_id: EntityId, other_ids: &[EntityId]) {
         self.turn_queue.clear();
-        // Put the player first
         self.turn_queue.push_back(player_id);
-        // Then add any other entity IDs
         for &id in other_ids {
             if id != player_id {
                 self.turn_queue.push_back(id);
             }
         }
-        self.current = None;
+        println!("Turn queue initialized: {:?}", self.turn_queue);
+        self.current = Some(player_id);
     }
 
-    /// Add a new entity to the end of the queue.
     pub fn add_entity(&mut self, new_id: EntityId) {
-        // Avoid duplicates if needed, or assume no duplicates are inserted
         if !self.turn_queue.contains(&new_id) {
             self.turn_queue.push_back(new_id);
+            println!("new entity #{} added to turn queue", new_id);
         }
     }
 
@@ -53,6 +46,7 @@ impl TurnManager {
     /// Move to the next entity in the queue, cycling back to the front if needed.
     /// Returns the new current entity, if the queue isn't empty.
     pub fn next_turn(&mut self) -> Option<EntityId> {
+        println!("Next turn");
         if self.turn_queue.is_empty() {
             self.current = None;
             return None;

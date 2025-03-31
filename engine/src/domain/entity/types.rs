@@ -1,3 +1,4 @@
+use serde::de::Visitor;
 use serde::Serialize;
 use specta::Type;
 use ts_rs::TS;
@@ -68,7 +69,6 @@ pub enum EntityKind {
 
 #[derive(Debug, Clone, Serialize, TS, Type)]
 #[ts(export)]
-
 pub struct Entity {
     pub id: EntityId,
     pub kind: EntityKind,
@@ -78,6 +78,7 @@ pub struct Entity {
     pub visible: bool,
     pub discovered: bool,
     pub ai: Option<Ai>,
+    pub last_seen_at: Option<WorldPosition>,
 }
 
 #[derive(Clone)]
@@ -89,6 +90,7 @@ pub struct EntityWithoutId {
     pub visible: bool,
     pub discovered: bool,
     pub ai: Option<Ai>,
+    pub last_seen_at: Option<WorldPosition>,
 }
 
 impl Entity {
@@ -98,17 +100,19 @@ impl Entity {
         pos: Option<WorldPosition>,
         stats: CoreAttributes,
         status: Status,
+        visible: bool,
         ai: Option<Ai>,
     ) -> Self {
         Self {
             id,
             kind,
             pos,
-            visible: false,
+            visible: visible,
             discovered: false,
             stats,
             status,
             ai,
+            last_seen_at: None,
         }
     }
 
@@ -174,6 +178,7 @@ impl EntityWithoutId {
             stats,
             status,
             ai,
+            last_seen_at: None,
         }
     }
 
@@ -187,6 +192,7 @@ impl EntityWithoutId {
             visible: self.visible,
             discovered: self.discovered,
             ai: self.ai,
+            last_seen_at: self.last_seen_at,
         }
     }
 }

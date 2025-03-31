@@ -1,5 +1,9 @@
 use engine::{
-    application::{events::GameEvent, game_loop::GameState},
+    application::{
+        events::GameEvent,
+        game_loop::{GameState, PlayerActionResult},
+        world_changes::WorldChange,
+    },
     core::types::Direction,
     create_initial_game_state,
     domain::{world::World, world_position::WorldPosition},
@@ -30,7 +34,7 @@ type GameStateWrapper<'a> = State<'a, Mutex<GameState>>;
 #[tauri::command]
 fn get_game_state(state: GameStateWrapper) -> Result<ClientGameState, String> {
     if let Ok(game_state) = state.lock() {
-        Ok(ClientGameState::from(game_state.world.clone()))
+        Ok(ClientGameState::from(game_state.get_visible_world()))
     } else {
         Err("Error fetching game state from back end".to_string())
     }
@@ -38,12 +42,13 @@ fn get_game_state(state: GameStateWrapper) -> Result<ClientGameState, String> {
 
 #[specta::specta]
 #[tauri::command]
-fn move_player(state: GameStateWrapper, direction: Direction) -> Result<ClientGameState, String> {
+fn move_player(
+    state: GameStateWrapper,
+    direction: Direction,
+) -> Result<PlayerActionResult, String> {
     if let Ok(mut game_state) = state.lock() {
         let player_id = game_state.world.player_id;
-
-        game_state.handle_event(GameEvent::MoveByDirection(player_id, direction));
-        Ok(ClientGameState::from(game_state.world.clone()))
+        game_state.handle_player_action(GameEvent::MoveByDirection(player_id, direction))
     } else {
         Err("Error applying player move event".to_string())
     }

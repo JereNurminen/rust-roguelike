@@ -13,7 +13,7 @@ async getGameState() : Promise<Result<ClientGameState, string>> {
     else return { status: "error", error: e  as any };
 }
 },
-async movePlayer(direction: Direction) : Promise<Result<ClientGameState, string>> {
+async movePlayer(direction: Direction) : Promise<Result<PlayerActionResult, string>> {
     try {
     return { status: "ok", data: await TAURI_INVOKE("move_player", { direction }) };
 } catch (e) {
@@ -34,6 +34,7 @@ async movePlayer(direction: Direction) : Promise<Result<ClientGameState, string>
 /** user-defined types **/
 
 export type Ai = { memory: Memory }
+export type ChangeType = { Move: [WorldPosition, WorldPosition] }
 export type ClientGameState = { world: World }
 export type CoreAttributes = { strength: number; speed: number; durability: number; fortitude: number; magic: number }
 export type Damage = { damage_type: DamageType; damage: DieRoll }
@@ -41,7 +42,7 @@ export type DamageType = "Slice" | "Pierce" | "Blunt" | "Fire"
 export type Dice = "D4" | "D6" | "D8" | "D10" | "D12" | "D20" | "D100" | { Flat: number }
 export type DieRoll = { count: number; dice: Dice; modifier: number }
 export type Direction = "North" | "East" | "South" | "West"
-export type Entity = { id: number; kind: EntityKind; pos: WorldPosition | null; stats: CoreAttributes; status: Status; visible: boolean; discovered: boolean; ai: Ai | null }
+export type Entity = { id: number; kind: EntityKind; pos: WorldPosition | null; stats: CoreAttributes; status: Status; visible: boolean; discovered: boolean; ai: Ai | null; last_seen_at: WorldPosition | null }
 export type EntityKind = { type: "Player" } | { type: "Npc"; species: SpeciesKind } | { type: "Item"; kind: ItemKind } | { type: "Wall"; material: Material } | { type: "Floor"; material: Material }
 export type Exhaustion = "WellRested" | "Rested" | "Normal" | "Tired" | "Exhausted"
 export type ItemKind = { Weapon: { damage: Damage[] } } | { Armor: { defense: number } }
@@ -49,9 +50,11 @@ export type LastSeen = { entity: number; position: WorldPosition; on_turn: numbe
 export type Material = { kind: MaterialKind; blocks_vision: boolean; blocks_movement: boolean }
 export type MaterialKind = "Stone" | "Flesh"
 export type Memory = { last_seen_positions: LastSeen[] }
+export type PlayerActionResult = { changes: WorldChange[]; world: World; remembered_entities: Entity[] }
 export type SpeciesKind = "Human" | "Goblin"
 export type Status = { health: number; stamina: number; mana: number; exhaustion: Exhaustion }
 export type World = { entities: Partial<{ [key in number]: Entity }>; next_entity_id: number; player_id: number }
+export type WorldChange = { entity_id: number; change: ChangeType }
 export type WorldPosition = { x: number; y: number }
 
 /** tauri-specta globals **/

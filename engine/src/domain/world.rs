@@ -98,7 +98,7 @@ impl World {
     }
 
     // Check if there's a clear line of sight between two positions
-    fn has_line_of_sight(&self, from: &WorldPosition, to: &WorldPosition) -> bool {
+    pub fn has_line_of_sight(&self, from: &WorldPosition, to: &WorldPosition) -> bool {
         // Always see your own position
         if from == to {
             return true;

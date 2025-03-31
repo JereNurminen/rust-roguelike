@@ -28,6 +28,7 @@ pub fn create_initial_game_state() -> GameState {
             mana: 10,
             exhaustion: Exhaustion::Rested,
         },
+        true,
         None,
     ));
 

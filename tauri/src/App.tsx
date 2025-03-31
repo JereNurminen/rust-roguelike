@@ -1,42 +1,38 @@
 import { useState, useEffect } from "react";
+import * as pixi from "pixi.js";
 import { invoke } from "@tauri-apps/api/core";
-import { GameRenderer } from "./components/GameRenderer";
-import "./App.css";
+import "./App.less";
 import api from "./api";
-import { Entity } from "./bindings";
+import { Direction, Entity, Result } from "./bindings";
+import PixiCanvas from "./PixiCanvas";
 
 function App() {
   const [entities, setEntities] = useState<Entity[]>([]);
-  const [selectedTile, setSelectedTile] = useState<{
-    x: number;
-    y: number;
-  } | null>(null);
+  const [rememberedEntities, setRememberedEntities] = useState<Entity[]>([]);
 
   useEffect(() => {
-    // Initial game state
-    updateGameState();
+    const f = async () => {
+      const initialWorld = await api.getGameState();
+      if (initialWorld.status == "ok") {
+        const entities = Object.values(initialWorld.data.world.entities).filter(
+          (x) => !!x,
+        );
+        updateGameState(entities, []);
+      }
+    };
+    void f();
   }, []);
 
-  const updateGameState = async () => {
-    const state = await api.getGameState();
-    if (state.status === "ok") {
-      setEntities(Object.values(state.data.world.entities).filter((x) => !!x));
-    }
-  };
-
-  const handleTileClick = async (x: number, y: number) => {
-    setSelectedTile({ x, y });
-    const entitiesAtPos = await invoke<Entity[]>("get_entities_at_position", {
-      x,
-      y,
-    });
-    if (entitiesAtPos.length > 0) {
-      console.log("Selected entities:", entitiesAtPos);
-    }
+  const updateGameState = async (
+    entities: Entity[],
+    rememberedEntities: Entity[],
+  ) => {
+    setEntities(entities);
+    setRememberedEntities(rememberedEntities);
   };
 
   const handleKeyPress = async (event: KeyboardEvent) => {
-    let direction = null;
+    let direction: Direction | null = null;
     switch (event.key) {
       case "h":
         direction = "West";
@@ -53,8 +49,14 @@ function App() {
     }
 
     if (direction) {
-      await invoke("move_player", { direction });
-      await updateGameState();
+      //await invoke("move_player", { direction });
+      const result = await api.movePlayer(direction);
+      if (result.status === "ok") {
+        await updateGameState(
+          Object.values(result.data.world.entities).filter((x) => !!x),
+          Object.values(result.data.remembered_entities).filter((x) => !!x),
+        );
+      }
     }
   };
 
@@ -64,12 +66,16 @@ function App() {
   }, []);
 
   return (
-    <main className="container">
-      <GameRenderer
-        entities={entities}
-        selectedTile={selectedTile}
-        onTileClick={handleTileClick}
-      />
+    <main id="container">
+      <div id="top-bar"></div>
+      <div id="game-container">
+        <PixiCanvas
+          entities={entities}
+          rememberedEntities={rememberedEntities}
+        />
+      </div>
+      <div id="side-panel"></div>
+      <div id="bottom-bar"></div>
     </main>
   );
 }

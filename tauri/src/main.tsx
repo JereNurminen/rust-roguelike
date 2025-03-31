@@ -3,10 +3,12 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import api from "./api";
 
+type WindowType = Window & {
+  api: typeof api;
+};
+
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
+  <App />,
 );
 
-(window as any).api = api;
+(window as unknown as WindowType).api = api;

@@ -36,6 +36,7 @@ pub fn create_stone_wall(pos: Option<WorldPosition>) -> EntityWithoutId {
         visible: true,
         discovered: false,
         ai: None,
+        last_seen_at: None,
     }
 }
 
@@ -61,5 +62,6 @@ pub fn create_stone_floor(pos: Option<WorldPosition>) -> EntityWithoutId {
         visible: true,
         discovered: false,
         ai: None,
+        last_seen_at: None,
     }
 }
